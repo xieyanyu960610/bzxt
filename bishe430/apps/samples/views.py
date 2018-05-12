@@ -14,7 +14,9 @@ from rest_framework.throttling import UserRateThrottle
 
 from .models import *
 from .serializers import *
-from utils.permissions import IsOwnerOrReadOnly
+from utils.permissions import IsAdmin
+from utils.XRDhandle import preprocess
+from bishe430.settings import MEDIA_ROOT
 # Create your views here.
 
 class exploSampleViewset(mixins.CreateModelMixin,mixins.ListModelMixin, mixins.RetrieveModelMixin,
@@ -32,10 +34,11 @@ class exploSampleViewset(mixins.CreateModelMixin,mixins.ListModelMixin, mixins.R
     """
     #queryset = exploSample.objects.filter(sname="样本3")
     #serializer_class = exploSampleSerializer
-    permission_classes = (IsAuthenticated,IsOwnerOrReadOnly)
+    permission_classes = (IsAuthenticated,IsAdmin)
     filter_backends = (filters.SearchFilter, filters.OrderingFilter)
-   # search_fields = ("sname", "sampleID", "user__name", "inputDate",)
+    search_fields = ("sname","sampleID",)
     ordering_fields = ("sampleID", "inputDate",)
+
     def get_queryset(self):
         queryset = exploSample.objects.all()
         sname = self.request.query_params.get("sname","")
@@ -63,34 +66,53 @@ class exploSampleViewset(mixins.CreateModelMixin,mixins.ListModelMixin, mixins.R
 """
 
 
-class exploSampleFileViewset(mixins.CreateModelMixin, mixins.DestroyModelMixin, viewsets.GenericViewSet):
+class exploSampleFileViewset(viewsets.ModelViewSet):
+    permission_classes = (IsAuthenticated,IsAdmin)
     queryset = exploSampleFile.objects.all()
     serializer_class = exploSampleFileSerializer
 
-class exploSamplePeakViewset(mixins.CreateModelMixin, mixins.DestroyModelMixin, viewsets.GenericViewSet):
+    def perform_create(self, serializer):
+        file = serializer.save()
+        if file.detectType == 3:
+            file.handledUrl= preprocess(file.exploSample.id,os.path.join(MEDIA_ROOT,str(file.docUrl)),os.path.join(MEDIA_ROOT,"file\exploSampleFile\handled"),"file\exploSampleFile")
+            file.save()
+        return file
+
+
+class exploSamplePeakViewset(viewsets.ModelViewSet):
+    permission_classes = (IsAuthenticated,IsAdmin)
     queryset = exploSamplePeak.objects.all()
     serializer_class = exploSamplePeakSerializer
 
-class exploChSampleViewset(mixins.CreateModelMixin, mixins.DestroyModelMixin, viewsets.GenericViewSet):
+class exploChSampleViewset(viewsets.ModelViewSet):
+    permission_classes = (IsAuthenticated,IsAdmin)
     queryset = exploChSample.objects.all()
     serializer_class = exploChSampleSerializer
 
-class devCompSampleFileViewset(mixins.CreateModelMixin, mixins.DestroyModelMixin, viewsets.GenericViewSet):
+class devCompSampleFileViewset(viewsets.ModelViewSet):
+    permission_classes = (IsAuthenticated,IsAdmin)
     queryset = devCompSampleFile.objects.all()
     serializer_class = devCompSampleFileSerializer
+    def perform_create(self, serializer):
+        file = serializer.save()
+        if file.detectType == 3:
+            file.handledUrl= preprocess(file.devCompSample.id,os.path.join(MEDIA_ROOT,str(file.docUrl)),os.path.join(MEDIA_ROOT,"file\devCompSampleFile\handled"),"file\devCompSampleFile")
+            file.save()
+        return file
 
-class devCompSamplePeakViewset(mixins.CreateModelMixin, mixins.DestroyModelMixin, viewsets.GenericViewSet):
+class devCompSamplePeakViewset(viewsets.ModelViewSet):
+    permission_classes = (IsAuthenticated,IsAdmin)
     queryset = devCompSamplePeak.objects.all()
     serializer_class = devCompSamplePeakSerializer
 
-class devCompChSampleViewset(mixins.CreateModelMixin, mixins.DestroyModelMixin, viewsets.GenericViewSet):
+class devCompChSampleViewset(viewsets.ModelViewSet):
+    permission_classes = (IsAuthenticated,IsAdmin)
     queryset = devCompChSample.objects.all()
     serializer_class = devCompChSampleSerializer
 
 class devCompSampleViewset(mixins.CreateModelMixin,mixins.ListModelMixin, mixins.RetrieveModelMixin,
                      mixins.DestroyModelMixin, viewsets.GenericViewSet):
     """
-    炸药及原材料常见样本管理
     list:
         获取
     create:
@@ -102,12 +124,12 @@ class devCompSampleViewset(mixins.CreateModelMixin,mixins.ListModelMixin, mixins
     """
     #queryset = exploSample.objects.filter(sname="样本3")
     #serializer_class = exploSampleSerializer
-    permission_classes = (IsAuthenticated,IsOwnerOrReadOnly)
+    permission_classes = (IsAuthenticated,IsAdmin)
     filter_backends = (filters.SearchFilter, filters.OrderingFilter)
    # search_fields = ("sname", "sampleID", "user__name", "inputDate",)
     ordering_fields = ("sampleID", "inputDate",)
     def get_queryset(self):
-        queryset = exploSample.objects.all()
+        queryset = devCompSample.objects.all()
         sname = self.request.query_params.get("sname","")
         if sname:
             queryset = queryset.filter(sname__contains=sname)
@@ -118,6 +140,7 @@ class devCompSampleViewset(mixins.CreateModelMixin,mixins.ListModelMixin, mixins
             return devCompSampleDetailSerializer
         return devCompSampleSerializer
 
-class devShapeSampleViewset(mixins.CreateModelMixin, mixins.DestroyModelMixin, viewsets.GenericViewSet):
+class devShapeSampleViewset(viewsets.ModelViewSet):
+    permission_classes = (IsAuthenticated,IsAdmin)
     queryset = devCompChSample.objects.all()
     serializer_class = devShapeSampleSerializer

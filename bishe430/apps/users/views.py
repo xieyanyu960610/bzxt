@@ -9,12 +9,14 @@ from rest_framework import status
 from rest_framework import permissions
 from rest_framework import authentication
 from rest_framework_jwt.authentication import JSONWebTokenAuthentication
+from rest_framework.permissions import IsAuthenticated
 
 from rest_framework_jwt.serializers import jwt_encode_handler, jwt_payload_handler
 
 
 from apps.users.serializers import *
 from apps.users.models import UserProfile
+from utils.permissions import *
 #User = get_user_model()
 
 # Create your views here.
@@ -24,36 +26,27 @@ class CustomBackend(ModelBackend):
     """
     def authenticate(self, username=None, password=None, **kwargs):
         try:
-            user = UserProfile.objects.get(Q(username=username)|Q(userID=username))
+            users = UserProfile.objects.filter(isDelete=False)
+            user = users.get(username=username)
             if user.check_password(password):
                 return user
         except Exception as e:
             return None
 
 
-class UserViewset(CreateModelMixin, mixins.UpdateModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):
+class UserViewset(viewsets.ModelViewSet):
     """
     用户
     """
     serializer_class = UserRegSerializer
     queryset = UserProfile.objects.all()
-
-
+    lookup_field = "username"
+#    permission_classes = (IsAuthenticated,IsSuperAdmin,)
     def get_permissions(self):
-        if self.action == "retrieve":
-            return [permissions.IsAuthenticated()]
-        elif self.action == "create":
-            return []
-
-        return []
-
-    def get_serializer_class(self):
-        if self.action == "retrieve":
-            return UserDetailSerializer
-        elif self.action == "create":
-            return UserRegSerializer
-
-        return UserDetailSerializer
+        if self.action == "retrieve" or self.action =="list":
+            return [IsAuthenticated(),]
+        else:
+            return [IsAuthenticated(),IsSuperAdmin(),]
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -74,5 +67,8 @@ class UserViewset(CreateModelMixin, mixins.UpdateModelMixin, mixins.RetrieveMode
 #url后返回的对象 比如此时就是users/任意数字都会返回当前用户
 #    def get_object(self):
  #       return self.request.user
+    def perform_destroy(self, instance):
+        instance.isDelete = True
+        instance.save()
 
 

@@ -14,7 +14,7 @@ class UserDetailSerializer(serializers.ModelSerializer):
     """
     class Meta:
         model = UserProfile
-        fields = ("name", "gender", "role", "phone", "isDelete","picUrl","note")
+        fields = ("username","name", "gender", "role", "phone", "isDelete","picUrl","note")
 
 
 class UserRegSerializer(serializers.ModelSerializer):
@@ -25,6 +25,16 @@ class UserRegSerializer(serializers.ModelSerializer):
         style={'input_type': 'password'},help_text="密码", label="密码", write_only=True,
     )
 
+    def validate_role(self, role):
+        # 注意参数，self以及字段名
+        # 注意函数名写法，validate_ + 字段名字
+        if self.context["request"].user.role == 3:
+            raise serializers.ValidationError("您没有执行该操作的权限。")
+        elif self.context["request"].user.role == 2 and role != 3:
+            raise serializers.ValidationError("您没有执行该操作的权限。")
+        else:
+            return role
+
     def create(self, validated_data):
         user = super(UserRegSerializer, self).create(validated_data=validated_data)
         user.set_password(validated_data["password"])
@@ -33,4 +43,4 @@ class UserRegSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = UserProfile
-        fields = ("username", "password")
+        fields = ("username", "password","username","name", "gender", "role", "phone", "isDelete","picUrl","note")

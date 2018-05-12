@@ -15,8 +15,8 @@ class exploMatch(models.Model):
         (4, "XRF"),
         (5, "GC-MS"),
     )
-    exploSample = models.ForeignKey(exploSample,null=True,blank=True, verbose_name=u"对应的样本",related_name="exlpoMatchSample",on_delete=models.CASCADE)
-    exploEvi = models.ForeignKey(exploEvi, verbose_name=u"对应的物证",related_name="exlpoMatchEvi",on_delete=models.CASCADE)
+    exploSample = models.ForeignKey(exploSample,null=True,blank=True, verbose_name=u"对应的样本",related_name="exploMatchSample",on_delete=models.CASCADE)
+    exploEvi = models.ForeignKey(exploEvi, verbose_name=u"对应的物证",related_name="exploMatchEvi",on_delete=models.CASCADE)
     matchType =models.IntegerField(choices=DETECT_TYPE, verbose_name="匹配数据类型")
     matchDegree =models.FloatField(default=0.0,verbose_name="匹配程度")
   #  isDelete = models.BooleanField(default=False, verbose_name="是否逻辑删除")

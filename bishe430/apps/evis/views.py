@@ -15,6 +15,9 @@ from rest_framework.throttling import UserRateThrottle
 from .models import *
 from .serializers import *
 from utils.permissions import IsOwnerOrReadOnly
+from utils.XRDhandle import *
+from bishe430.settings import MEDIA_ROOT
+from user_operation.models import *
 # Create your views here.
 
 class exploEviViewset(mixins.CreateModelMixin,mixins.ListModelMixin, mixins.RetrieveModelMixin,
@@ -62,27 +65,62 @@ class exploEviViewset(mixins.CreateModelMixin,mixins.ListModelMixin, mixins.Retr
 """
 
 
-class exploEviFileViewset(mixins.CreateModelMixin, mixins.DestroyModelMixin, viewsets.GenericViewSet):
+class exploEviFileViewset(viewsets.ModelViewSet):
+    permission_classes = (IsAuthenticated, IsOwnerOrReadOnly)
     queryset = exploEviFile.objects.all()
     serializer_class = exploEviFileSerializer
+    def perform_create(self, serializer):
+        file = serializer.save()
+        if file.detectType == 3:
+            file.handledUrl= preprocess(file.exploEvi.id,os.path.join(MEDIA_ROOT,str(file.docUrl)),os.path.join(MEDIA_ROOT,"file\exploEviFile\handled"),"file\exploEviFile")
+            file.save()
+            for i in similarity_rank(os.path.join(MEDIA_ROOT,str(file.handledUrl)),os.path.join(MEDIA_ROOT,"file\exploSampleFile\handled")):
+                explo_match = exploMatch()
+                explo_match.exploSample = exploSample.objects.get(id=i[0])
+                explo_match.exploEvi = file.exploEvi
+                explo_match.matchType = 3
+                explo_match.matchDegree = i[1]
+                explo_match.save()
+           # string=similarity_rank(os.path.join(file.exploEvi.id + '.txt'),os.path.join(MEDIA_ROOT,"file\exploEviFile\handled"))
+           # print(string)
+        return file
 
-class exploEviPeakViewset(mixins.CreateModelMixin, mixins.DestroyModelMixin, viewsets.GenericViewSet):
+class exploEviPeakViewset(viewsets.ModelViewSet):
+    permission_classes = (IsAuthenticated, IsOwnerOrReadOnly)
     queryset = exploEviPeak.objects.all()
     serializer_class = exploEviPeakSerializer
 
-class exploChEviViewset(mixins.CreateModelMixin, mixins.DestroyModelMixin, viewsets.GenericViewSet):
+class exploChEviViewset(viewsets.ModelViewSet):
+    permission_classes = (IsAuthenticated, IsOwnerOrReadOnly)
     queryset = exploChEvi.objects.all()
     serializer_class = exploChEviSerializer
 
-class devCompEviFileViewset(mixins.CreateModelMixin, mixins.DestroyModelMixin, viewsets.GenericViewSet):
+class devCompEviFileViewset(viewsets.ModelViewSet):
+    permission_classes = (IsAuthenticated, IsOwnerOrReadOnly)
     queryset = devCompEviFile.objects.all()
     serializer_class = devCompEviFileSerializer
+    def perform_create(self, serializer):
+        file = serializer.save()
+        if file.detectType == 3:
+            file.handledUrl= preprocess(file.devCompEvi.id,os.path.join(MEDIA_ROOT,str(file.docUrl)),os.path.join(MEDIA_ROOT,"file\devCompEviFile\handled"),"file\devCompEviFile")
+            file.save()
+            for i in similarity_rank(os.path.join(MEDIA_ROOT, str(file.handledUrl)),
+                                     os.path.join(MEDIA_ROOT, "file\devCompSampleFile\handled")):
+                devComp_match = devCompMatch()
+                devComp_match.devCompSample = devCompSample.objects.get(id=i[0])
+                devComp_match.devCompEvi = file.devCompEvi
+                devComp_match.matchType = 3
+                devComp_match.matchDegree = i[1]
+                devComp_match.save()
+        return file
 
-class devCompEviPeakViewset(mixins.CreateModelMixin, mixins.DestroyModelMixin, viewsets.GenericViewSet):
+class devCompEviPeakViewset(viewsets.ModelViewSet):
+    permission_classes = (IsAuthenticated, IsOwnerOrReadOnly)
     queryset = devCompEviPeak.objects.all()
     serializer_class = devCompEviPeakSerializer
 
-class  devCompChEviViewset(mixins.CreateModelMixin, mixins.DestroyModelMixin, viewsets.GenericViewSet):
+class  devCompChEviViewset(viewsets.ModelViewSet):
+    permission_classes = (IsAuthenticated, IsOwnerOrReadOnly)
     queryset = devCompChEvi.objects.all()
     serializer_class =  devCompChEviSerializer
 
@@ -116,6 +154,7 @@ class devCompEviViewset(mixins.CreateModelMixin,mixins.ListModelMixin, mixins.Re
             return devCompEviDetailSerializer
         return devCompEviSerializer
 
-class devShapeEviViewset(mixins.CreateModelMixin, mixins.DestroyModelMixin, viewsets.GenericViewSet):
+class devShapeEviViewset(viewsets.ModelViewSet):
+    permission_classes = (IsAuthenticated, IsOwnerOrReadOnly)
     queryset = devShapeEvi.objects.all()
     serializer_class = devShapeEviSerializer

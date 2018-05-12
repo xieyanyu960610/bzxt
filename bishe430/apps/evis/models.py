@@ -74,7 +74,7 @@ class exploEviFile(models.Model):
     docType = models.IntegerField(choices=DOC_TYPE, null=True, blank=True,verbose_name="录入文档格式")
     docUrl = models.FileField(max_length=100, upload_to="file/exploEviFile/", null=True, blank=True,
                               verbose_name="录入文档路径")
-    handledUrl = models.FileField(max_length=100, upload_to="file/exploEviFile/handled", null=True, blank=True,
+    handledUrl = models.FileField(max_length=100, null=True, blank=True,
                                   verbose_name="处理完的文件")
   #  isDelete = models.BooleanField(default=False, verbose_name="是否逻辑删除")
     class Meta:
@@ -165,7 +165,7 @@ class devCompEviFile(models.Model):
     docType = models.IntegerField(choices=DOC_TYPE, null=True, blank=True,verbose_name="录入文档格式")
     docUrl = models.FileField(max_length=100, upload_to="file/devCompEviFile/", null=True, blank=True,
                               verbose_name="录入文档路径")
-    handledUrl = models.FileField(max_length=100, upload_to="file/devCompEviFile/handled", null=True, blank=True,
+    handledUrl = models.FileField(max_length=100, null=True, blank=True,
                                   verbose_name="处理完的文件")
  #   isDelete = models.BooleanField(default=False, verbose_name="是否逻辑删除")
     class Meta:

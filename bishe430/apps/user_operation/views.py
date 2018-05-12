@@ -5,6 +5,7 @@ from rest_framework.permissions import IsAuthenticated
 
 from .models import *
 from .serializers import *
+from utils.permissions import *
 # Create your views here.
 class exploMatchViewset(mixins.CreateModelMixin, mixins.ListModelMixin, mixins.RetrieveModelMixin,
                      mixins.DestroyModelMixin, viewsets.GenericViewSet):
@@ -16,7 +17,7 @@ class exploMatchViewset(mixins.CreateModelMixin, mixins.ListModelMixin, mixins.R
     create:
         收藏商品
     """
-#    permission_classes = (IsAuthenticated, IsOwnerOrReadOnly)
+    permission_classes = (IsAuthenticated, IsAdmin)
  #   authentication_classes = (JSONWebTokenAuthentication, SessionAuthentication)
 #    lookup_field = "goods_id"
 
@@ -47,10 +48,9 @@ class devCompMatchViewset(mixins.CreateModelMixin, mixins.ListModelMixin, mixins
     create:
         收藏商品
     """
-#    permission_classes = (IsAuthenticated, IsOwnerOrReadOnly)
  #   authentication_classes = (JSONWebTokenAuthentication, SessionAuthentication)
 #    lookup_field = "goods_id"
-
+    permission_classes = (IsAuthenticated, IsAdmin)
     def get_queryset(self):
         return devCompMatch.objects.all()
 
@@ -78,9 +78,9 @@ class devShapeMatchViewset(mixins.CreateModelMixin, mixins.ListModelMixin, mixin
     create:
         收藏商品
     """
-#    permission_classes = (IsAuthenticated, IsOwnerOrReadOnly)
  #   authentication_classes = (JSONWebTokenAuthentication, SessionAuthentication)
 #    lookup_field = "goods_id"
+    permission_classes = (IsAuthenticated, IsAdmin)
 
     def get_queryset(self):
         return devShapeMatch.objects.all()

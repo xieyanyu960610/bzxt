@@ -3,6 +3,7 @@ from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
 
 from .models import *
+from utils.XRDhandle import preprocess
 
 
 class exploSampleFileSerializer(serializers.ModelSerializer):
@@ -11,6 +12,7 @@ class exploSampleFileSerializer(serializers.ModelSerializer):
     )
     inputDate = serializers.DateTimeField(read_only=True, format='%Y-%m-%d %H:%M')
     handledUrl =serializers.FileField(read_only=True,)
+
     class Meta:
         model = exploSampleFile
         fields = "__all__"
@@ -76,7 +78,7 @@ class devCompSampleDetailSerializer(serializers.ModelSerializer):
     devCompChSample = devCompChSampleSerializer(many=True)
 
     class Meta:
-        model = exploSample
+        model =devCompSample
         fields = ("id", "sname", "sampleID", "user", "inputDate", "sampleState", "sampleOrigin",
                   "sampleType", "sampleMake", "sampleDraw", "sampleAnalyse", "analyseCondition", "picUrl",
                   "picDescrip", "note", "devCompSampleFile", "devCompChSample")

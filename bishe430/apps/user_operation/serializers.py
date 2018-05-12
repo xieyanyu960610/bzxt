@@ -14,12 +14,14 @@ class exploMatchSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 class exploMatchDetailSerializer(serializers.ModelSerializer):
-    exlpoMatchSample = exploSampleSerializer(many=True)
-    exlpoMatchEvi= exploEviSerializer(many=True)
+    exploSample = exploSampleSerializer()
+#    exploMatchSample = serializers.SerializerMethodField()
+    exploEvi= exploEviSerializer()
+
 
     class Meta:
         model = exploMatch
-        fields = ("id", "matchType", "matchDegree", "exlpoMatchSample", "exlpoMatchEvi")
+        fields = ("id", "matchType", "matchDegree", "exploSample", "exploEvi")
 
 
 class devCompMatchSerializer(serializers.ModelSerializer):
@@ -30,12 +32,12 @@ class devCompMatchSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 class devCompMatchDetailSerializer(serializers.ModelSerializer):
-    devCompMatchSample = devCompSampleSerializer(many=True)
-    devCompMatchEvi= devCompEviSerializer(many=True)
+    devCompSample = devCompSampleSerializer()
+    devCompEvi= devCompEviSerializer()
 
     class Meta:
         model = devCompMatch
-        fields = ("id", "matchType", "matchDegree", "devCompMatchSample ", "devCompMatchEvi")
+        fields = ("id", "matchType", "matchDegree", "devCompSample", "devCompEvi")
 
 
 class devShapeMatchSerializer(serializers.ModelSerializer):
@@ -46,9 +48,9 @@ class devShapeMatchSerializer(serializers.ModelSerializer):
 
 
 class devShapeMatchDetailSerializer(serializers.ModelSerializer):
-    devShapeMatchSample =devShapeSampleSerializer(many=True)
-    devShapeMatchEvi = devShapeEviSerializer(many=True)
+    devShapeSample =devShapeSampleSerializer()
+    devShapeEvi = devShapeEviSerializer()
 
     class Meta:
         model = devShapeMatch
-        fields = ("id", "matchType", "matchCoordi", "devShapeMatchSample ", "devShapeMatchEvi")
+        fields = ("id", "matchType", "matchCoordi", "devShapeSample","devShapeEvi")

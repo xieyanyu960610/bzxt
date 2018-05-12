@@ -1,8 +1,10 @@
 # _*_ encoding:utf-8 _*_
 from datetime import datetime
+import os
 
 from django.db import models
 from apps.users.models import UserProfile
+from bishe430.settings import MEDIA_ROOT
 
 
 
@@ -76,7 +78,8 @@ class exploSampleFile(models.Model):
     detectType =models.IntegerField(choices=DETECT_TYPE, verbose_name="检测数据类型")
     docType =models.IntegerField(choices=DOC_TYPE,null=True,blank=True, verbose_name="录入文档格式")
     docUrl =models.FileField(max_length=100,upload_to="file/exploSampleFile/",null=True,blank=True,verbose_name="录入文档路径")
-    handledUrl = models.FileField(max_length=100,upload_to="file/exploSampleFile/handled",null=True,blank=True,verbose_name="处理完的文件")
+    #handledUrl2 = models.CharField(max_length=200,null=True,blank=True,verbose_name="处理完的文件",)
+    handledUrl = models.FileField(max_length=100,null=True,blank=True,verbose_name="处理完的文件")
  #   isDelete = models.BooleanField(default=False, verbose_name="是否逻辑删除")
     class Meta:
         verbose_name = "炸药及原材料常见样本文件存储表"
@@ -168,7 +171,7 @@ class devCompSampleFile(models.Model):
     docType = models.IntegerField(choices=DOC_TYPE, null=True,blank=True,verbose_name="录入文档格式")
     docUrl = models.FileField(max_length=100, upload_to="file/devCompSampleFile/", null=True, blank=True,
                               verbose_name="录入文档路径")
-    handledUrl = models.FileField(max_length=100, upload_to="file/devCompSampleFile/handled", null=True, blank=True,
+    handledUrl = models.FileField(max_length=100, null=True, blank=True,
                                   verbose_name="处理完的文件")
     #isDelete = models.BooleanField(default=False, verbose_name="是否逻辑删除")
     class Meta:
