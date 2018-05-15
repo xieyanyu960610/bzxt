@@ -31,24 +31,6 @@ class exploEvi(models.Model):
         return self.evidenceID
 
 
-class exploChEvi(models.Model):
-    """
-    炸药及原材料案件物证子元素表
-    """
-    exploEvi = models.ForeignKey(exploEvi, verbose_name=u"对应的物证",related_name="exploChEvi",on_delete=models.CASCADE)
-    name =models.CharField(max_length=20,verbose_name="元素名称")
-    content =models.FloatField(default =0,verbose_name="元素含量")
-    offset =models.FloatField(default =0,verbose_name="元素偏差值")
-  # isDelete = models.BooleanField(default=False, verbose_name="是否逻辑删除")
-    class Meta:
-        verbose_name = "炸药及原材料案件物证子元素表"
-        verbose_name_plural = verbose_name
-
-    def __str__(self):
-        return "%d(%s)".format(self. exploEvi.evidenceID, self.name)
-
-
-
 class exploEviFile(models.Model):
     """
     炸药及原材料案件物证文件存储表
@@ -83,6 +65,21 @@ class exploEviFile(models.Model):
 
     def __str__(self):
         return "%d(%d)".format(self. exploEvi.evidenceID, self.detectType)
+class exploChEvi(models.Model):
+    """
+    炸药及原材料案件物证子元素表
+    """
+    exploEviFile = models.ForeignKey(exploEviFile, verbose_name=u"对应的物证文件",related_name="exploChEvi",on_delete=models.CASCADE)
+    detectType =models.CharField(max_length=20,null=True,blank=True,verbose_name='检测类型')
+    elementsList = models.CharField(max_length=300,null=True,blank=True,verbose_name='元素列表')
+  # isDelete = models.BooleanField(default=False, verbose_name="是否逻辑删除")
+    class Meta:
+        verbose_name = "炸药及原材料案件物证子元素表"
+        verbose_name_plural = verbose_name
+
+    def __str__(self):
+        return self.exploEviFile.exploEvi.evidenceID
+
 
 class exploEviPeak(models.Model):
     """
@@ -122,23 +119,6 @@ class devCompEvi(models.Model):
         return self.evidenceID
 
 
-class devCompChEvi(models.Model):
-    """
-    爆炸装置案件物证成分子元素表
-    """
-    devCompEvi = models.ForeignKey(devCompEvi, verbose_name=u"对应的物证",related_name="devCompChEvi",on_delete=models.CASCADE)
-    name = models.CharField(max_length=20, verbose_name="元素名称")
-    content = models.FloatField(default=0, verbose_name="元素含量")
-    offset = models.FloatField(default=0, verbose_name="元素偏差值")
-#    isDelete = models.BooleanField(default=False, verbose_name="是否逻辑删除")
-    class Meta:
-        verbose_name = "爆炸装置案件物证成分子元素表"
-        verbose_name_plural = verbose_name
-
-    def __str__(self):
-        return "%d(%s)".format(self. devCompEvi.evidenceID, self.name)
-
-
 
 class devCompEviFile(models.Model):
     """
@@ -174,6 +154,22 @@ class devCompEviFile(models.Model):
 
     def __str__(self):
         return "%d(%d)".format(self. devCompEvi.evidenceID, self.detectType)
+
+
+class devCompChEvi(models.Model):
+    """
+    爆炸装置案件物证成分子元素表
+    """
+    devCompEviFile = models.ForeignKey(devCompEviFile, verbose_name=u"对应的物证文件",related_name="devCompChEvi",on_delete=models.CASCADE)
+    detectType =models.CharField(max_length=20,null=True,blank=True,verbose_name='检测类型')
+    elementsList = models.CharField(max_length=300,null=True,blank=True,verbose_name='元素列表')
+#    isDelete = models.BooleanField(default=False, verbose_name="是否逻辑删除")
+    class Meta:
+        verbose_name = "爆炸装置案件物证成分子元素表"
+        verbose_name_plural = verbose_name
+
+    def __str__(self):
+        return self.devCompEviFile.devCompEvi.evidenceID
 
 class devCompEviPeak(models.Model):
     """

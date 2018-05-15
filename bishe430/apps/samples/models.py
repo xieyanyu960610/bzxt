@@ -37,23 +37,6 @@ class exploSample(models.Model):
         return self.sname
 
 
-class exploChSample(models.Model):
-    """
-    炸药及原材料常见样本子元素表
-    """
-    exploSample =models.ForeignKey(exploSample, verbose_name=u"对应的炸药",related_name="exploChSample",on_delete=models.CASCADE)
-    name =models.CharField(max_length=20,verbose_name="元素名称")
-    content =models.FloatField(default =0,verbose_name="元素含量")
-    offset =models.FloatField(default =0,verbose_name="元素偏差值")
-    #isDelete = models.BooleanField(default=False, verbose_name="是否逻辑删除")
-    class Meta:
-        verbose_name = "炸药及原材料常见样本子元素表"
-        verbose_name_plural = verbose_name
-
-    def __str__(self):
-        return "%s(%s)".format(self. exploSample.sname, self.name)
-
-
 class exploSampleFile(models.Model):
     """
     炸药及原材料常见样本文件存储表
@@ -87,6 +70,23 @@ class exploSampleFile(models.Model):
 
     def __str__(self):
         return "%s(%d)".format(self.exploSample.sname, self.detectType)
+
+
+class exploChSample(models.Model):
+    """
+    炸药及原材料常见样本子元素表
+    """
+    exploSampleFile = models.ForeignKey(exploSampleFile, verbose_name=u"对应的炸药文件", related_name="exploChSample",
+                                        on_delete=models.CASCADE)
+    detectType =models.CharField(max_length=20,null=True,blank=True,verbose_name='检测类型')
+    elementsList = models.CharField(max_length=300,null=True,blank=True,verbose_name='元素列表')
+    #isDelete = models.BooleanField(default=False, verbose_name="是否逻辑删除")
+    class Meta:
+        verbose_name = "炸药及原材料常见样本子元素表"
+        verbose_name_plural = verbose_name
+
+    def __str__(self):
+        return self.exploSampleFile.exploSample.sname
 
 
 class exploSamplePeak(models.Model):
@@ -129,23 +129,6 @@ class devCompSample(models.Model):
         return self.sname
 
 
-class devCompChSample(models.Model):
-    """
-    爆炸装置常见样本成分子元素表
-    """
-    devCompSample =models.ForeignKey(devCompSample, verbose_name=u"对应的样本",related_name="devCompChSample",on_delete=models.CASCADE)
-    name = models.CharField(max_length=20, verbose_name="元素名称")
-    content = models.FloatField(default=0, verbose_name="元素含量")
-    offset = models.FloatField(default=0, verbose_name="元素偏差值")
-   # isDelete = models.BooleanField(default=False, verbose_name="是否逻辑删除")
-    class Meta:
-        verbose_name = "爆炸装置常见样本成分子元素表"
-        verbose_name_plural = verbose_name
-
-    def __str__(self):
-        return "%s(%s)".format(self. devCompSample.sname, self.name)
-
-
 class devCompSampleFile(models.Model):
     """
     爆炸装置常见样本成分文件存储表
@@ -180,6 +163,21 @@ class devCompSampleFile(models.Model):
 
     def __str__(self):
         return "%s(%d)".format(self.devCompSample.sname, self.detectType)
+
+class devCompChSample(models.Model):
+    """
+    爆炸装置常见样本成分子元素表
+    """
+    devCompSampleFile = models.ForeignKey(devCompSampleFile, verbose_name=u"对应的物证文件",related_name="devCompChSample",on_delete=models.CASCADE)
+    detectType =models.CharField(max_length=20,null=True,blank=True,verbose_name='检测类型')
+    elementsList = models.CharField(max_length=300,null=True,blank=True,verbose_name='元素列表')
+   # isDelete = models.BooleanField(default=False, verbose_name="是否逻辑删除")
+    class Meta:
+        verbose_name = "爆炸装置常见样本成分子元素表"
+        verbose_name_plural = verbose_name
+
+    def __str__(self):
+        return self.devCompSampleFile.devCompSample.sname
 
 
 class devCompSamplePeak(models.Model):

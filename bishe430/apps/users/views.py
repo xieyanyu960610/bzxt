@@ -64,9 +64,17 @@ class UserViewset(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         return serializer.save()
-#url后返回的对象 比如此时就是users/任意数字都会返回当前用户
-#    def get_object(self):
- #       return self.request.user
+
+
+    def perform_update(self, serializer):
+        if serializer.validated_data['password'] :
+            password =serializer.validated_data['password']
+            user = self.get_object()
+            user.set_password(password)
+            serializer.validated_data['password'] = user.password
+        serializer.save()
+
+
     def perform_destroy(self, instance):
         instance.isDelete = True
         instance.save()

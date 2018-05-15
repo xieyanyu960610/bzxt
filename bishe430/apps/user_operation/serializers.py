@@ -21,7 +21,7 @@ class exploMatchDetailSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = exploMatch
-        fields = ("id", "matchType", "matchDegree", "exploSample", "exploEvi")
+        fields = ("id", "matchType","matchModel","matchDegree", "exploSample", "exploEvi")
 
 
 class devCompMatchSerializer(serializers.ModelSerializer):
@@ -37,7 +37,7 @@ class devCompMatchDetailSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = devCompMatch
-        fields = ("id", "matchType", "matchDegree", "devCompSample", "devCompEvi")
+        fields = ("id", "matchType", "matchModel","matchDegree", "devCompSample", "devCompEvi")
 
 
 class devShapeMatchSerializer(serializers.ModelSerializer):

@@ -4,6 +4,10 @@ from rest_framework.validators import UniqueTogetherValidator
 
 from .models import *
 
+class exploChEviSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = exploChEvi
+        fields = "__all__"
 
 class exploEviFileSerializer(serializers.ModelSerializer):
     user = serializers.HiddenField(
@@ -15,26 +19,29 @@ class exploEviFileSerializer(serializers.ModelSerializer):
         model = exploEviFile
         fields = "__all__"
 
+
+class exploEviFileDetailSerializer(serializers.ModelSerializer):
+    exploChEvi = exploChEviSerializer(many=True)
+    class Meta:
+        model = exploEviFile
+        fields =("exploEvi", "user", "inputDate", "detectDevice", "detectMrfs", "detectType", "docType", "docUrl",
+         "handledUrl", "exploChEvi")
+
+
 class exploEviPeakSerializer(serializers.ModelSerializer):
     class Meta:
         model = exploEviPeak
         fields = "__all__"
 
 
-class exploChEviSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = exploChEvi
-        fields = "__all__"
-
-
 class exploEviDetailSerializer(serializers.ModelSerializer):
-    exploEviFile = exploEviFileSerializer(many=True)
-    exploChEvi = exploChEviSerializer(many=True)
+    exploEviFile = exploEviFileDetailSerializer(many=True)
+
     class Meta:
         model = exploEvi
         fields = ("id","caseID", "evidenceID", "user", "inputDate", "eviState", "eviMake",
                     "eviDraw", "eviAnalyse", "analyseCondition","picUrl",
-                    "picDescrip","note","exploEviFile","exploChEvi")
+                    "picDescrip","note","exploEviFile")
 
 class exploEviSerializer(serializers.ModelSerializer):
     user = serializers.HiddenField(
@@ -46,6 +53,10 @@ class exploEviSerializer(serializers.ModelSerializer):
         model = exploEvi
         fields = "__all__"
 
+class devCompChEviSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = devCompChEvi
+        fields = "__all__"
 
 class devCompEviFileSerializer(serializers.ModelSerializer):
     user = serializers.HiddenField(
@@ -58,6 +69,14 @@ class devCompEviFileSerializer(serializers.ModelSerializer):
         model = devCompEviFile
         fields = "__all__"
 
+class devCompEviFileDetailSerializer(serializers.ModelSerializer):
+    devCompChEvi = devCompChEviSerializer(many=True)
+
+    class Meta:
+        model = devCompEviFile
+        fields =("devCompEvi", "user", "inputDate", "detectDevice", "detectMrfs", "detectType", "docType", "docUrl",
+         "handledUrl", "devCompChEvi")
+
 
 class devCompEviPeakSerializer(serializers.ModelSerializer):
     class Meta:
@@ -65,21 +84,15 @@ class devCompEviPeakSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
-class devCompChEviSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = devCompChEvi
-        fields = "__all__"
-
 
 class devCompEviDetailSerializer(serializers.ModelSerializer):
-    devCompEviFile = devCompEviFileSerializer(many=True)
-    devCompChEvi = devCompChEviSerializer(many=True)
+    devCompEviFile = devCompEviFileDetailSerializer(many=True)
 
     class Meta:
         model = devCompEvi
         fields = ("id","caseID", "evidenceID", "user", "inputDate", "eviState", "eviMake",
                     "eviDraw", "eviAnalyse", "analyseCondition","picUrl",
-                    "picDescrip","note","devCompEviFile", "devCompChEvi")
+                    "picDescrip","note","devCompEviFile")
 
 
 class devCompEviSerializer(serializers.ModelSerializer):

@@ -22,7 +22,7 @@ class UserRegSerializer(serializers.ModelSerializer):
                                      validators=[UniqueValidator(queryset=UserProfile.objects.all(), message="该编号已被注册过")])
 
     password = serializers.CharField(
-        style={'input_type': 'password'},help_text="密码", label="密码", write_only=True,
+        style={'input_type': 'password'},help_text="密码", label="密码",# write_only=True,
     )
 
     def validate_role(self, role):
@@ -43,4 +43,4 @@ class UserRegSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = UserProfile
-        fields = ("username", "password","username","name", "gender", "role", "phone", "isDelete","picUrl","note")
+        fields = ("username", "password","userID","name", "gender", "role", "phone", "isDelete","picUrl","note")

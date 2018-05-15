@@ -6,6 +6,11 @@ from .models import *
 from utils.XRDhandle import preprocess
 
 
+class exploChSampleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = exploChSample
+        fields = "__all__"
+
 class exploSampleFileSerializer(serializers.ModelSerializer):
     user = serializers.HiddenField(
         default=serializers.CurrentUserDefault()
@@ -17,26 +22,31 @@ class exploSampleFileSerializer(serializers.ModelSerializer):
         model = exploSampleFile
         fields = "__all__"
 
+class exploSampleFileDetailSerializer(serializers.ModelSerializer):
+
+    exploChSample=exploChSampleSerializer(many=True)
+
+    class Meta:
+        model = exploSampleFile
+        fields =("exploSample", "user", "inputDate", "detectDevice", "detectMrfs", "detectType", "docType", "docUrl",
+         "handledUrl", "exploChSample")
+
+
 class exploSamplePeakSerializer(serializers.ModelSerializer):
     class Meta:
         model = exploSamplePeak
         fields = "__all__"
 
 
-class exploChSampleSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = exploChSample
-        fields = "__all__"
-
-
 class exploSampleDetailSerializer(serializers.ModelSerializer):
-    exploSampleFile = exploSampleFileSerializer(many=True)
-    exploChSample = exploChSampleSerializer(many=True)
+    exploSampleFile = exploSampleFileDetailSerializer(many=True)
+
     class Meta:
         model = exploSample
         fields = ("id","sname", "sampleID", "user", "inputDate", "sampleState", "sampleOrigin",
                     "sampleType", "sampleMake", "sampleDraw", "sampleAnalyse", "analyseCondition","picUrl",
-                    "picDescrip","note","exploSampleFile","exploChSample")
+                    "picDescrip","note","exploSampleFile")
+
 
 class exploSampleSerializer(serializers.ModelSerializer):
     user = serializers.HiddenField(
@@ -48,6 +58,11 @@ class exploSampleSerializer(serializers.ModelSerializer):
         model = exploSample
         fields = "__all__"
 
+
+class devCompChSampleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = devCompChSample
+        fields = "__all__"
 
 class devCompSampleFileSerializer(serializers.ModelSerializer):
     user = serializers.HiddenField(
@@ -61,21 +76,24 @@ class devCompSampleFileSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
+class devCompSampleFileDetailSerializer(serializers.ModelSerializer):
+
+    devCompChSample = devCompChSampleSerializer(many=True)
+
+    class Meta:
+        model = devCompSampleFile
+        fields =("devCompSample","user","inputDate","detectDevice","detectMrfs","detectType","docType","docUrl","handledUrl","devCompChSample")
+
+
 class devCompSamplePeakSerializer(serializers.ModelSerializer):
     class Meta:
         model = devCompSamplePeak
         fields = "__all__"
 
 
-class devCompChSampleSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = devCompChSample
-        fields = "__all__"
-
 
 class devCompSampleDetailSerializer(serializers.ModelSerializer):
-    devCompSampleFile = devCompSampleFileSerializer(many=True)
-    devCompChSample = devCompChSampleSerializer(many=True)
+    devCompSampleFile = devCompSampleFileDetailSerializer(many=True)
 
     class Meta:
         model =devCompSample
