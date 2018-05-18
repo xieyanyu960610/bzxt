@@ -41,6 +41,12 @@ class UserRegSerializer(serializers.ModelSerializer):
         user.save()
         return user
 
+    # def update(self, instance, validated_data):
+    #     user = super(UserRegSerializer, self).create(validated_data=validated_data)
+    #     password = user.set_password(validated_data["password"])
+    #     validated_data["password"] = password
+    #     instance.save()
+
     class Meta:
         model = UserProfile
         fields = ("username", "password","userID","name", "gender", "role", "phone", "isDelete","picUrl","note")

@@ -67,12 +67,13 @@ class UserViewset(viewsets.ModelViewSet):
 
 
     def perform_update(self, serializer):
-        if serializer.validated_data['password'] :
+        if ('password' in serializer.validated_data.keys()):
             password =serializer.validated_data['password']
             user = self.get_object()
             user.set_password(password)
             serializer.validated_data['password'] = user.password
         serializer.save()
+
 
 
     def perform_destroy(self, instance):
