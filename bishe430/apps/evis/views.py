@@ -58,14 +58,13 @@ class exploEviFileViewset(viewsets.ModelViewSet):
             return exploEviFileDetailSerializer
         return exploEviFileSerializer
 
-    def perform_create(self, serializer):
-        file = serializer.save()
+    def handleFile(self,file):
         if file.detectType == 3:
             file.handledUrl= preprocess(file.exploEvi.id,os.path.join(MEDIA_ROOT,str(file.docUrl)),os.path.join(MEDIA_ROOT,"file\exploEviFile\handled"),"file\exploEviFile")
             file.save()
             for i in similarity_rank(os.path.join(MEDIA_ROOT,str(file.handledUrl)),os.path.join(MEDIA_ROOT,"file\exploSampleFile\handled")):
                 explo_match = exploMatch()
-                explo_match.exploSample = exploSample.objects.get(id=i[0])
+                explo_match.exploSample_id = i[0] # exploSample.objects.get(id=i[0])
                 explo_match.exploEvi = file.exploEvi
                 explo_match.matchType = 3
                 explo_match.matchDegree = i[1]
@@ -88,7 +87,7 @@ class exploEviFileViewset(viewsets.ModelViewSet):
                 scoresList = xrf_rank(chEvi,sampleListAll)
                 for scoreList in scoresList:
                     explo_match = exploMatch()
-                    explo_match.exploSample =exploSample.objects.get(id=scoreList[0])
+                    explo_match.exploSample_id = scoreList[0]#exploSample.objects.get(id=scoreList[0])
                     explo_match.exploEvi = file.exploEvi
                     explo_match.matchType = 4
                     explo_match.matchModel = chEvi[0]
@@ -109,6 +108,18 @@ class exploEviFileViewset(viewsets.ModelViewSet):
                 #         i+=1
            # string=similarity_rank(os.path.join(file.exploEvi.id + '.txt'),os.path.join(MEDIA_ROOT,"file\exploEviFile\handled"))
            # print(string)
+        return file
+
+    def perform_update(self, serializer):
+        file = serializer.save()
+        # for match in exploMatch.objects.filter(exploEvi =file.exploEvi):
+        #     match.delete()
+        file = self.handleFile(file)
+        return file
+
+    def perform_create(self, serializer):
+        file = serializer.save()
+        file = self.handleFile(file)
         return file
 
 
@@ -133,15 +144,14 @@ class devCompEviFileViewset(viewsets.ModelViewSet):
             return devCompEviFileDetailSerializer
         return devCompEviFileSerializer
 
-    def perform_create(self, serializer):
-        file = serializer.save()
+    def handleFile(self,file):
         if file.detectType == 3:
             file.handledUrl= preprocess(file.devCompEvi.id,os.path.join(MEDIA_ROOT,str(file.docUrl)),os.path.join(MEDIA_ROOT,"file\devCompEviFile\handled"),"file\devCompEviFile")
             file.save()
             for i in similarity_rank(os.path.join(MEDIA_ROOT, str(file.handledUrl)),
                                      os.path.join(MEDIA_ROOT, "file\devCompSampleFile\handled")):
                 devComp_match = devCompMatch()
-                devComp_match.devCompSample = devCompSample.objects.get(id=i[0])
+                devComp_match.devCompSample_id = i[0]#devCompSample.objects.get(id=i[0])
                 devComp_match.devCompEvi = file.devCompEvi
                 devComp_match.matchType = 3
                 devComp_match.matchDegree = i[1]
@@ -164,12 +174,22 @@ class devCompEviFileViewset(viewsets.ModelViewSet):
                 scoresList = xrf_rank(chEvi,sampleListAll)
                 for scoreList in scoresList:
                     dev_match = devCompMatch()
-                    dev_match.devCompSample = devCompSample.objects.get(id=scoreList[0])
+                    dev_match.devCompSample_id = scoreList[0]#devCompSample.objects.get(id=scoreList[0])
                     dev_match.devCompEvi = file.devCompEvi
                     dev_match.matchType = 4
                     dev_match.matchModel = chEvi[0]
                     dev_match.matchDegree = scoreList[1]
                     dev_match.save()
+        return file
+
+    def perform_update(self, serializer):
+        file = serializer.save()
+        file = self.handleFile(file)
+        return file
+
+    def perform_create(self, serializer):
+        file = serializer.save()
+        file = self.handleFile(file)
         return file
 
 

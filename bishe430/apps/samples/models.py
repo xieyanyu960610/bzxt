@@ -176,8 +176,8 @@ class devCompChSample(models.Model):
         verbose_name = "爆炸装置常见样本成分子元素表"
         verbose_name_plural = verbose_name
 
-    def __str__(self):
-        return self.devCompSampleFile.devCompSample.sname
+    # def __str__(self):
+    #     return self.devCompSampleFile.devCompSample.sname
 
 
 class devCompSamplePeak(models.Model):
@@ -211,16 +211,17 @@ class devShapeSample(models.Model):
     proCoordi = models.CharField(max_length=400, null=True, blank=True, verbose_name="前景颜色点坐标")
     backCoordi=models.CharField(max_length=400,null=True, blank=True, verbose_name="背景颜色点坐标")
     boardCoordi=models.CharField(max_length=400,null=True, blank=True, verbose_name="主板颜色点坐标")
-    blackWhiteUrl=models.ImageField(max_length=100,upload_to="image/devShapeSample/blackWhite/",null=True, blank=True, verbose_name="黑白图像路径")
-    interColorUrl=models.ImageField(max_length=100,upload_to="image/devShapeSample/interColor/",null=True, blank=True, verbose_name="中间彩色图像路径")
+    blackWhiteUrl=models.ImageField(max_length=100,null=True, blank=True, verbose_name="黑白图像路径")#upload_to="image/devShapeSample/blackWhite/",
+    interColorUrl=models.ImageField(max_length=100,null=True, blank=True, verbose_name="中间彩色图像路径")#,upload_to="image/devShapeSample/interColor/"
+    middleResultUrl = models.FileField(max_length=100,null=True, blank=True,verbose_name="第一次文件路径")#,upload_to="file/devShapeSample/middleResult"
     compCheckCoordi=models.CharField(max_length=400,null=True, blank=True, verbose_name="元器件点坐标（校验）")
     boardCheckCoordi=models.CharField(max_length=400,null=True, blank=True, verbose_name="主板像素坐标（校验）")
-    featureUrl=models.FileField(max_length=100, upload_to="file/devShapeSample/feature",null=True, blank=True, verbose_name="特征文件路径")
-    resultPicUrl=models.ImageField(max_length=100,upload_to="image/devShapeSample/result/",null=True, blank=True, verbose_name="结果图像形式路径")
-    resultFileUrl=models.FileField(max_length=100, upload_to="file/devShapeSample/result/",null=True, blank=True, verbose_name="结果文件形式路径")
-    originalUrl =models.ImageField(max_length=100,upload_to="image/devShapeSample/original/",null=True,blank=True,verbose_name="原始图像文件路径")
+    featureUrl=models.FileField(max_length=100,null=True, blank=True, verbose_name="特征文件路径")#, upload_to="file/devShapeSample/feature"
+    resultPicUrl=models.ImageField(max_length=100,null=True, blank=True, verbose_name="结果图像形式路径")#upload_to="image/devShapeSample/result/",
+    resultFileUrl=models.FileField(max_length=100,null=True, blank=True, verbose_name="结果文件形式路径")# upload_to="file/devShapeSample/result/",
+    originalUrl =models.ImageField(max_length=100,upload_to="image/devShapeSample/original/",null=True,blank=True,verbose_name="原始图像文件路径")#
     originalResolution =models.CharField(max_length=30,null=True, blank=True, verbose_name="原始图像采集分辨率")
-    nomUrl =models.ImageField(max_length=100,upload_to="image/devShapeSample/nom/",null=True,blank=True,verbose_name="归一化图像文件路径")
+    nomUrl =models.ImageField(max_length=100,upload_to="image/devShapeSample/nom/",null=True,blank=True,verbose_name="归一化图像文件路径")#
     nomResolution=models.CharField(max_length=30,null=True, blank=True, verbose_name="归一化图像分辨率")
     note = models.CharField(max_length=200, null=True, blank=True, verbose_name="备注")
    # isDelete = models.BooleanField(default=False, verbose_name="是否逻辑删除")
