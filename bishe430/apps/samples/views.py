@@ -16,10 +16,13 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 import math
+from django.http import HttpResponse
+from .tasks import *
 
 
 from .models import *
 from .serializers import *
+# from .task import renew
 from utils.permissions import IsAdmin
 from utils.XRDhandle import preprocess
 from utils.XRFhandle import xls_process
@@ -27,12 +30,174 @@ from bishe430.settings import MEDIA_ROOT,BASE_DIR
 from user_operation.models import *
 from evis.models import *
 from utils.XRDhandle import *
+from utils.XRFhandle import *
 from utils.PCB import *
 
 
 
 
+
+exploMatchType = []
+devCompMatchType = []
+
+def tasks(request,x,y):
+    print('before run_test_suit')
+    result = add.delay(x,y)
+    print('after run_test_suit')
+    return HttpResponse("job is runing background~")
+
+
+def updateExploMatch(self):
+    counting = len(exploMatchType)
+    for i in range(0,counting):
+        if exploMatchType[0] == 3 :
+            exploMatchType.remove(3)
+            exploMatch.objects.filter(matchType = 3).delete()
+            evi_files = os.path.join(MEDIA_ROOT, "file\exploEviFile\handled")
+            all_file = os.listdir(evi_files)
+            for i in range(0, len(all_file)):
+                if os.path.splitext(all_file[i])[1] == '.txt':
+                    cur_path = os.path.join(evi_files, all_file[i])
+                    cur_txt = all_file[i]
+                    txt_id = os.path.splitext(cur_txt)[0]
+                    # eviMatchs = exploMatch.objects.filter(exploEvi_id=txt_id).filter(
+                    #     matchType=3)  # exploEvi.objects.get(id = txt_id))
+                    # evis = eviMatchs.order_by("matchDegree")
+                    #
+                    # for evi in evis:
+                    #     evi.delete()
+                    for i in similarity_rank(cur_path,
+                                             os.path.join(MEDIA_ROOT, "file\exploSampleFile\handled")):
+                        explo_match = exploMatch()
+                        explo_match.exploSample_id = i[0]
+                        explo_match.exploEvi_id = txt_id  # exploEviMatch
+                        explo_match.matchType = 3
+                        explo_match.matchDegree = i[1]
+                        explo_match.save()
+
+        elif exploMatchType[0] == 4:
+            exploMatchType.remove(4)
+            exploMatch.objects.filter(matchType = 4).delete()
+            eviChs = exploChEvi.objects.all()
+            for i in range(0,len(eviChs)):
+                chSamples = exploChSample.objects.filter(detectType=eviChs[i].detectType)
+                sampleListAll = []
+                for chSample in chSamples:
+                    # print  (chSample['exploSample'])
+                    sampleList = json.loads(chSample.elementsList)
+                    sampleList.append(chSample.exploSampleFile.exploSample_id)
+                    sampleListAll.append(sampleList)
+                chEvi = json.loads(eviChs[i].elementsList)
+                chEvi.insert(0,eviChs[i].detectType)
+                scoresList = xrf_rank(chEvi, sampleListAll)
+                for scoreList in scoresList:
+                    explo_match = exploMatch()
+                    explo_match.exploSample_id = scoreList[0]  # exploSample.objects.get(id=scoreList[0])
+                    explo_match.exploEvi = eviChs[i].exploEviFile.exploEvi
+                    explo_match.matchType = 4
+                    explo_match.matchModel = chEvi[0]
+                    explo_match.matchDegree = scoreList[1]
+                    explo_match.save()
+            # return HttpResponse("exploMatchingXRF is runing background~")
+
+    return HttpResponse("exploMatching has updated~")
+
+
+            # chEvi_list = xls_process(os.path.join(MEDIA_ROOT, str(file.docUrl)))
+            # for chEvi in chEvi_list:
+            #     explo_ChEvi = exploChEvi()
+            #     explo_ChEvi.exploEviFile = file
+            #     explo_ChEvi.detectType = chEvi[0]
+            #     explo_ChEvi.elementsList = json.dumps(chEvi[1:])
+            #     explo_ChEvi.save()
+            #     chSamples = exploChSample.objects.filter(detectType=chEvi[0])
+            #     sampleListAll = []
+            #     for chSample in chSamples:
+            #         # print  (chSample['exploSample'])
+            #         sampleList = json.loads(chSample.elementsList)
+            #         sampleList.append(chSample.exploSampleFile.exploSample_id)
+            #         sampleListAll.append(sampleList)
+            #     scoresList = xrf_rank(chEvi, sampleListAll)
+            #     for scoreList in scoresList:
+            #         explo_match = exploMatch()
+            #         explo_match.exploSample_id = scoreList[0]  # exploSample.objects.get(id=scoreList[0])
+            #         explo_match.exploEvi = file.exploEvi
+            #         explo_match.matchType = 4
+            #         explo_match.matchModel = chEvi[0]
+            #         explo_match.matchDegree = scoreList[1]
+            #         explo_match.save()
+                #
+                # for chSample in chSamples:
+                #     print()
+                #     i =0
+                #     while i<10:
+                #         explo_match = exploMatch()
+                #         explo_match.exploSample = chSample.exploSample
+                #         explo_match.exploEvi = file.exploEvi
+                #         explo_match.matchType = 4
+                #         explo_match.matchModel = chEvi[0]
+                #         explo_match.matchDegree = xrf_similarity(chEvi[1:],json.loads(chSample.elementsList))
+                #         explo_match.save()
+                #         i+=1
+            # string=similarity_rank(os.path.join(file.exploEvi.id + '.txt'),os.path.join(MEDIA_ROOT,"file\exploEviFile\handled"))
+            # print(string)
+
+
 # Create your views here.
+def updateDevCompMatch(self):
+    counting = len(devCompMatchType)
+    for i in range(0,counting):
+        if devCompMatchType[0] == 3 :
+            devCompMatchType.remove(3)
+            devCompMatch.objects.filter(matchType = 3).delete()
+            evi_files = os.path.join(MEDIA_ROOT, "file\devCompEviFile\handled")
+            all_file = os.listdir(evi_files)
+            for i in range(0, len(all_file)):
+                if os.path.splitext(all_file[i])[1] == '.txt':
+                    cur_path = os.path.join(evi_files, all_file[i])
+                    cur_txt = all_file[i]
+                    txt_id = os.path.splitext(cur_txt)[0]
+                    # eviMatchs = exploMatch.objects.filter(exploEvi_id=txt_id).filter(
+                    #     matchType=3)  # exploEvi.objects.get(id = txt_id))
+                    # evis = eviMatchs.order_by("matchDegree")
+                    #
+                    # for evi in evis:
+                    #     evi.delete()
+                    for i in similarity_rank(cur_path,
+                                             os.path.join(MEDIA_ROOT, "file\devCompSampleFile\handled")):
+                        devComp_match = devCompMatch()
+                        devComp_match.devCompSample_id = i[0]  # devCompSample.objects.get(id=i[0])
+                        devComp_match.devCompEvi_id = txt_id
+                        devComp_match.matchType = 3
+                        devComp_match.matchDegree = i[1]
+                        devComp_match.save()
+
+        elif devCompMatchType[0] == 4:
+            devCompMatchType.remove(4)
+            devCompMatch.objects.filter(matchType = 4).delete()
+            eviChs =devCompChEvi.objects.all()
+            for i in range(0,len(eviChs)):
+                chSamples = devCompChSample.objects.filter(detectType=eviChs[i].detectType)
+                sampleListAll = []
+                for chSample in chSamples:
+                    # print  (chSample['exploSample'])
+                    sampleList = json.loads(chSample.elementsList)
+                    sampleList.append(chSample.devCompSampleFile.devCompSample_id)
+                    sampleListAll.append(sampleList)
+                chEvi = json.loads(eviChs[i].elementsList)
+                chEvi.insert(0,eviChs[i].detectType)
+                scoresList = xrf_rank(chEvi, sampleListAll)
+                for scoreList in scoresList:
+                    dev_match = devCompMatch()
+                    dev_match.devCompSample_id = scoreList[0]  # devCompSample.objects.get(id=scoreList[0])
+                    dev_match.devCompEvi = eviChs[i].devCompEviFile.devCompEvi
+                    dev_match.matchType = 4
+                    dev_match.matchModel = chEvi[0]
+                    dev_match.matchDegree = scoreList[1]
+                    dev_match.save()
+            # return HttpResponse("exploMatchingXRF is runing background~")
+
+    return HttpResponse("devCompMatching has updated~")
 
 class exploSampleViewset(mixins.CreateModelMixin,mixins.ListModelMixin, mixins.RetrieveModelMixin,
                      mixins.DestroyModelMixin, viewsets.GenericViewSet):
@@ -81,62 +246,68 @@ class exploSampleFileViewset(viewsets.ModelViewSet):
 
 
     def handleFile(self,file):
-        def pearson(txt_1, txt_2):
-            signal_1 = np.loadtxt(txt_1)[1]
-            print(signal_1)
-            signal_2 = np.loadtxt(txt_2)[1]
-            print(signal_2)
-            n = len(signal_1)
-            mean1 = signal_1.mean()
-            mean2 = signal_2.mean()
-            standvalue1 = math.sqrt(sum((signal_1 - mean1) * (signal_1 - mean1)))
-            standvalue2 = math.sqrt(sum((signal_2 - mean2) * (signal_2 - mean2)))
-            cov = sum((signal_1 - mean1) * (signal_2 - mean2))
-            pearson = cov / (standvalue1 * standvalue2)
-            return pearson
+
+        # def pearson(txt_1, txt_2):
+        #     signal_1 = np.loadtxt(txt_1)[1]
+        #     print(signal_1)
+        #     signal_2 = np.loadtxt(txt_2)[1]
+        #     print(signal_2)
+        #     n = len(signal_1)
+        #     mean1 = signal_1.mean()
+        #     mean2 = signal_2.mean()
+        #     standvalue1 = math.sqrt(sum((signal_1 - mean1) * (signal_1 - mean1)))
+        #     standvalue2 = math.sqrt(sum((signal_2 - mean2) * (signal_2 - mean2)))
+        #     cov = sum((signal_1 - mean1) * (signal_2 - mean2))
+        #     pearson = cov / (standvalue1 * standvalue2)
+        #     return pearson
 
         if file.detectType == 3:
             file.handledUrl = preprocess(file.exploSample.id, os.path.join(MEDIA_ROOT, str(file.docUrl)),
                                          os.path.join(MEDIA_ROOT, "file\exploSampleFile\handled"),
                                          "file\exploSampleFile")
             file.save()
-            evi_files = os.path.join(MEDIA_ROOT,"file\exploEviFile\handled")
-            all_file = os.listdir(evi_files)
-            for i in range(0, len(all_file)):
-                if os.path.splitext(all_file[i])[1] == '.txt':
-                    cur_path = os.path.join(evi_files, all_file[i])
-                    cur_txt = all_file[i]
-                    txt_id = os.path.splitext(cur_txt)[0]
-                    # exploEviMatch = exploEvi.objects.get(id=txt_id)
-                    cur_score = pearson(os.path.join(MEDIA_ROOT,str(file.handledUrl)), cur_path)
-                    eviMatchs = exploMatch.objects.filter(exploEvi_id = txt_id).filter(matchType=3) #exploEvi.objects.get(id = txt_id))
-                    sampleMatch = eviMatchs.filter(exploSample_id=file.exploSample.id)
-                    evis = eviMatchs.order_by("matchDegree")
 
-                    if len(sampleMatch) == 0:
-                        if cur_score > evis[0].matchDegree:
-                            evis[0].delete()
-                            explo_match = exploMatch()
-                            explo_match.exploSample = file.exploSample
-                            explo_match.exploEvi_id = txt_id#exploEviMatch
-                            explo_match.matchType = 3
-                            explo_match.matchDegree = cur_score
-                            explo_match.save()
-                    else:
-                        if cur_score >= evis[0].matchDegree:
-                            sampleMatch[0].matchDegree = cur_score
-                            sampleMatch[0].save()
-                        else:
-                            for evi in evis:
-                                evi.delete()
-                            for i in similarity_rank(cur_path,
-                                                     os.path.join(MEDIA_ROOT, "file\exploSampleFile\handled")):
-                                explo_match = exploMatch()
-                                explo_match.exploSample = exploSample.objects.get(id=i[0])
-                                explo_match.exploEvi_id =txt_id #exploEviMatch
-                                explo_match.matchType = 3
-                                explo_match.matchDegree = i[1]
-                                explo_match.save()
+            # fileId = file.id
+
+            # renew2.delay()
+
+            # evi_files = os.path.join(MEDIA_ROOT,"file\exploEviFile\handled")
+            # all_file = os.listdir(evi_files)
+            # for i in range(0, len(all_file)):
+            #     if os.path.splitext(all_file[i])[1] == '.txt':
+            #         cur_path = os.path.join(evi_files, all_file[i])
+            #         cur_txt = all_file[i]
+            #         txt_id = os.path.splitext(cur_txt)[0]
+            #         # exploEviMatch = exploEvi.objects.get(id=txt_id)
+            #         cur_score = pearson(os.path.join(MEDIA_ROOT,str(file.handledUrl)), cur_path)
+            #         eviMatchs = exploMatch.objects.filter(exploEvi_id = txt_id).filter(matchType=3) #exploEvi.objects.get(id = txt_id))
+            #         sampleMatch = eviMatchs.filter(exploSample_id=file.exploSample.id)
+            #         evis = eviMatchs.order_by("matchDegree")
+            #
+            #         if len(sampleMatch) == 0:
+            #             if cur_score > evis[0].matchDegree:
+            #                 evis[0].delete()
+            #                 explo_match = exploMatch()
+            #                 explo_match.exploSample = file.exploSample
+            #                 explo_match.exploEvi_id = txt_id#exploEviMatch
+            #                 explo_match.matchType = 3
+            #                 explo_match.matchDegree = cur_score
+            #                 explo_match.save()
+            #         else:
+            #             if cur_score >= evis[0].matchDegree:
+            #                 sampleMatch[0].matchDegree = cur_score
+            #                 sampleMatch[0].save()
+            #             else:
+            #                 for evi in evis:
+            #                     evi.delete()
+            #                 for i in similarity_rank(cur_path,
+            #                                          os.path.join(MEDIA_ROOT, "file\exploSampleFile\handled")):
+            #                     explo_match = exploMatch()
+            #                     explo_match.exploSample = exploSample.objects.get(id=i[0])
+            #                     explo_match.exploEvi_id =txt_id #exploEviMatch
+            #                     explo_match.matchType = 3
+            #                     explo_match.matchDegree = i[1]
+            #                     explo_match.save()
 
         elif file.detectType == 4:
             chSample_list = xls_process(os.path.join(MEDIA_ROOT, str(file.docUrl)))
@@ -146,12 +317,15 @@ class exploSampleFileViewset(viewsets.ModelViewSet):
                 explo_ChSample.detectType = chSample[0]
                 explo_ChSample.elementsList = json.dumps(chSample[1:])
                 explo_ChSample.save()
+        if file.detectType not in exploMatchType:
+            exploMatchType.append(file.detectType)
         return file
 
 
     def perform_update(self, serializer):
         file = serializer.save()
         file = self.handleFile(file)
+        # result = run_test_suit.delay('110')
         return file
 
 
@@ -194,6 +368,8 @@ class devCompSampleFileViewset(viewsets.ModelViewSet):
                 dev_ChSample.detectType = chSample[0]
                 dev_ChSample.elementsList = json.dumps(chSample[1:])
                 dev_ChSample.save()
+        if file.detectType not in devCompMatchType:
+            devCompMatchType.append(file.detectType)
         return file
 
     def update(self, request, *args, **kwargs):

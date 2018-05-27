@@ -31,6 +31,14 @@ from evis.views import *
 from apps.users.views import UserViewset
 from user_operation.views import *
 
+
+from django.conf.urls import url
+from samples import views
+
+
+
+
+
 router = DefaultRouter()
 
 #配置exploSamples的url
@@ -84,8 +92,8 @@ urlpatterns = [
      url(r'^media/(?P<path>.*)$',  serve, {"document_root":MEDIA_ROOT}),
 
      url(r'^', include(router.urls)),
-     # drf自带的token认证模式
-     url(r'^api-token-auth/', views.obtain_auth_token),
+     # # drf自带的token认证模式
+     # url(r'^api-token-auth/', views.obtain_auth_token),
 
      url(r'docs/', include_docs_urls(title="爆炸系统")),
      url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
@@ -93,6 +101,12 @@ urlpatterns = [
      # jwt的认证接口
      url(r'^login/', obtain_jwt_token),
      url(r'^api-token-auth/', obtain_jwt_token),
+
+     url(r'^task/(\d+)/(\d+)/', views.tasks, name='task'),
+
+     url(r'updateExploMatch/',views.updateExploMatch,name='updateExploMatch'),
+     url(r'updateDevCompMatch/',views.updateDevCompMatch,name="updateDevCompMatch")
+
 
 
 ]
