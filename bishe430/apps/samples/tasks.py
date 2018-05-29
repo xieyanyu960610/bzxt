@@ -109,7 +109,7 @@ def renew(fileId):
 def renew2():
     print("start")
     # start =time.time()
-    exploMatch.objects.all().delete()
+    exploMatch.objects.filter(matchType = 3).delete()
     evi_files = os.path.join(MEDIA_ROOT, "file\exploEviFile\handled")
     all_file = os.listdir(evi_files)
     for i in range(0, len(all_file)):

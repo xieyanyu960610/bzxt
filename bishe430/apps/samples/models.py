@@ -154,6 +154,7 @@ class devCompSampleFile(models.Model):
     docType = models.IntegerField(choices=DOC_TYPE, null=True,blank=True,verbose_name="录入文档格式")
     docUrl = models.FileField(max_length=100, upload_to="file/devCompSampleFile/", null=True, blank=True,
                               verbose_name="录入文档路径")
+    strength = models.CharField(max_length=20, default="千分之一", verbose_name="浓度")
     handledUrl = models.FileField(max_length=100, null=True, blank=True,
                                   verbose_name="处理完的文件")
     #isDelete = models.BooleanField(default=False, verbose_name="是否逻辑删除")
@@ -197,7 +198,7 @@ class devShapeSample(models.Model):
     """
     爆炸装置常见样本形态表
     """
-    isCircuit =models.BooleanField(default=False, verbose_name="是否是电路板")
+    # isCircuit =models.BooleanField(default=False, verbose_name="是否是电路板")
     sname = models.CharField(max_length=20, verbose_name="装置名称")
     sampleID = models.CharField(max_length=10, verbose_name="装置编号")
     belongTo =models.CharField(max_length=20,null=True, blank=True, verbose_name="所属装置")
@@ -207,6 +208,7 @@ class devShapeSample(models.Model):
     sampleModel=models.CharField(max_length=20,null=True, blank=True, verbose_name="型号")
     trademark=models.CharField(max_length=30,null=True, blank=True, verbose_name="商标")
     function=models.CharField(max_length=100,null=True, blank=True, verbose_name="所属装置")
+    isFirst = models.BooleanField(default=True,verbose_name="是否是第一次分割")
     rectCoordi=models.CharField(max_length=100,null=True, blank=True, verbose_name="矩形框坐标（4个）")
     proCoordi = models.CharField(max_length=400, null=True, blank=True, verbose_name="前景颜色点坐标")
     backCoordi=models.CharField(max_length=400,null=True, blank=True, verbose_name="背景颜色点坐标")

@@ -105,7 +105,8 @@ urlpatterns = [
      url(r'^task/(\d+)/(\d+)/', views.tasks, name='task'),
 
      url(r'updateExploMatch/',views.updateExploMatch,name='updateExploMatch'),
-     url(r'updateDevCompMatch/',views.updateDevCompMatch,name="updateDevCompMatch")
+     url(r'updateDevCompMatch/',views.updateDevCompMatch,name="updateDevCompMatch"),
+     url(r'updateDevShapeMatch/',views.updateDevShapeMatch,name="updateDevShapeMatch")
 
 
 

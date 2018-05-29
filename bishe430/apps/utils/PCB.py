@@ -16,7 +16,17 @@ def getPCB(id,type):
 
 def segComp(id,type):
     path = os.path.join(path2, 'utils/segComp.exe')
-    os.popen(path + r' ' + str(id) + r' ' + type).read()
+    os.popen(path+r' '+str(id)+r' '+type).read()
+
+
+
+def CompMatching(id):
+    path = os.path.join(path2, 'utils/CompMatching.exe')
+    os.popen(path + r' ' + str(id)).read()
+
+def FeatureMatching(id):
+    path = os.path.join(path2, 'utils/FeatureMatching.exe')
+    os.popen(path + r' ' + str(id)).read()
 
 
 

@@ -12,6 +12,7 @@ from rest_framework import viewsets
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.throttling import UserRateThrottle
 import json
+import re
 
 from .models import *
 from .serializers import *
@@ -21,6 +22,7 @@ from utils.XRFhandle import *
 from bishe430.settings import MEDIA_ROOT
 from samples.models import *
 from user_operation.models import *
+from utils.PCB import *
 # Create your views here.
 
 
@@ -234,3 +236,132 @@ class devShapeEviViewset(viewsets.ModelViewSet):
     permission_classes = (IsAuthenticated, IsOwnerOrReadOnly)
     queryset = devShapeEvi.objects.all()
     serializer_class = devShapeEviSerializer
+
+    def perform_create(self, serializer):
+        evi = serializer.save()
+        id = evi.id
+        #重命名
+        name = str(evi.originalUrl).split("/")[-1]
+        picType = os.path.splitext(name)[1]
+        path = os.path.join(MEDIA_ROOT,"image/devShapeEvi/original/")
+        os.rename(os.path.join(MEDIA_ROOT,str(evi.originalUrl)), os.path.join(path, str(id) + picType))
+        evi.originalUrl = "image/devShapeEvi/original/" + str(id) + picType
+        evi.save()
+        if evi.isCircuit == False:
+            FeatureMatching(id)
+            evi.featureUrl = "file/devShapeEvi/feature/" + str(id) + ".harris"
+            evi.save()
+            fileUrl = os.path.join(MEDIA_ROOT,"file/devShapeEvi/match/"+ str(id)+".txt")
+            file = open(fileUrl)
+            seq = re.compile("\s+")
+            for line in file:
+                lst = seq.split(line.strip())
+                shapeMatch = devShapeMatch()
+                shapeMatch.devShapeEvi_id = lst[0]
+                shapeMatch.devShapeSample_id = lst[1]
+                shapeMatch.matchDegree = lst[2]
+                shapeMatch.matchSampleCoordi = json.dumps(lst[3:6])
+                shapeMatch.matchEviCoordi = json.dumps(lst[6:])
+                shapeMatch.isCircuit = False
+                shapeMatch.save()
+            file.close()
+            os.remove(fileUrl)
+
+        return evi
+
+
+    def perform_update(self, serializer):
+        evi = serializer.save()
+        id =evi.id
+        if evi.isCircuit == False:
+            FeatureMatching(id)
+            evi.featureUrl = "file/devShapeEvi/feature/" + str(id) + ".harris"
+            evi.save()
+        else:
+            middle = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "utils/middle/")
+            if evi.isFirst == True:
+
+                # 写文件
+                rectUrl = os.path.join(middle, str(id) + "-1.txt")
+                proUrl = os.path.join(middle, str(id) + "-2.txt")
+                backUrl = os.path.join(middle, str(id) + "-3.txt")
+                boardUrl = os.path.join(middle, str(id) + "-4.txt")
+
+                rect = open(rectUrl, "w")
+                rect.write(evi.rectCoordi)
+                rect.close()
+                pro = open(proUrl, "w")
+                pro.write(evi.proCoordi)
+                pro.close()
+                back = open(backUrl, "w")
+                back.write(evi.backCoordi)
+                back.close()
+                board = open(boardUrl, "w")
+                board.write(evi.boardCoordi)
+                board.close()
+
+                getPCB(id, "Evi")
+
+                evi.blackWhiteUrl = "image/devShapeEvi/blackWhite/" + str(id) + ".jpg"
+                evi.interColorUrl = "image/devShapeEvi/interColor/" + str(id) + ".jpg"
+                evi.middleResultUrl = "file/devShapeEvi/middleResult/" + str(id) + ".txt"
+
+                os.remove(rectUrl)
+                os.remove(proUrl)
+                os.remove(backUrl)
+                os.remove(boardUrl)
+
+                evi.save()
+            else:
+                compCheckUrl = os.path.join(middle, str(id) + "-5.txt")
+                boardCheckUrl = os.path.join(middle, str(id) + "-6.txt")
+
+                compCheck = open(compCheckUrl, "w")
+                compCheck.write(evi.compCheckCoordi)
+                compCheck.close()
+                boardCheck = open(boardCheckUrl, "w")
+                boardCheck.write(evi.boardCheckCoordi)
+                boardCheck.close()
+
+                segComp(id, "Evi")
+
+                evi.featureUrl = "file/devShapeEvi/feature/" + str(id) + ".harris"
+                evi.resultPicUrl = "image/devShapeEvi/result/" + str(id) + ".jpg"
+                evi.resultFileUrl = "file/devShapeEvi/result/" + str(id) + ".seg"
+
+                os.remove(compCheckUrl)
+                os.remove(boardCheckUrl)
+                evi.save()
+
+                CompMatching(id)
+
+
+        fileUrl = os.path.join(MEDIA_ROOT,"file/devShapeEvi/match/"+ str(id)+".txt")
+        if os.path.exists(fileUrl):
+            file = open(fileUrl)
+            seq = re.compile("\s+")
+            for line in file:
+                lst = seq.split(line.strip())
+                shapeMatch = devShapeMatch()
+                shapeMatch.devShapeEvi_id = lst[0]
+                shapeMatch.devShapeSample_id = lst[1]
+                shapeMatch.matchDegree = lst[2]
+                shapeMatch.matchSampleCoordi = json.dumps(lst[3:6])
+                shapeMatch.matchEviCoordi = json.dumps(lst[6:])
+                shapeMatch.isCircuit = evi.isCircuit
+                shapeMatch.save()
+            file.close()
+            # os.remove(fileUrl)
+        return evi
+
+
+
+
+
+
+    #
+    # def perform_destroy(self, instance):
+    #     # originalUrl= os.path.join(MEDIA_ROOT,str( instance.originalUrl))
+    #     # if os.path.exists(originalUrl):
+    #     #     os.remove(originalUrl)
+    #     instance.delete()

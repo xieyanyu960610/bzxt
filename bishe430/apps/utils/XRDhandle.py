@@ -14,6 +14,7 @@ import os
 # data_file:原始谱图路径
 # return:预处理后谱图存入的路径
 def preprocess(data_id, data_file,handled_dir,handled111):
+    # print(os.getcwd())#F:\毕设\bishe430
     def Gaussian_smooth(data):
         smooth = []
         odata = data[:]

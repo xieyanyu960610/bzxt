@@ -53,4 +53,4 @@ class devShapeMatchDetailSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = devShapeMatch
-        fields = ("id", "matchType", "matchCoordi", "devShapeSample","devShapeEvi")
+        fields = ("id","isCircuit", "isSure", "matchDegree", "devShapeSample","devShapeEvi","matchSampleCoordi","matchEviCoordi")

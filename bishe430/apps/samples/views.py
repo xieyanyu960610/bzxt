@@ -18,6 +18,7 @@ import matplotlib.pyplot as plt
 import math
 from django.http import HttpResponse
 from .tasks import *
+import re
 
 
 from .models import *
@@ -32,6 +33,7 @@ from evis.models import *
 from utils.XRDhandle import *
 from utils.XRFhandle import *
 from utils.PCB import *
+from utils.GCMS_handle import *
 
 
 
@@ -199,6 +201,47 @@ def updateDevCompMatch(self):
 
     return HttpResponse("devCompMatching has updated~")
 
+def updateDevShapeMatch(self):
+    evis = devShapeEvi.objects.all()
+    for evi in evis:
+        id = evi.id
+        typeLists = [ match.isCircuit for match in devShapeMatch.objects.filter(devShapeEvi_id = id)]
+        # devShapeMatch.objects.filter(devShapeEvi_id=id).delete()
+        existType = []
+        for typeList in typeLists:
+            if typeList not in existType:
+                existType.append(typeList)
+        devShapeMatch.objects.filter(devShapeEvi_id=id).delete()
+        for i in range(0,len(existType)):
+            if existType[i] == False:
+                FeatureMatching(id)
+            else:
+                CompMatching(id)
+
+            fileUrl = os.path.join(MEDIA_ROOT, "file/devShapeEvi/match/" + str(id) + ".txt")
+            if os.path.exists(fileUrl):
+                file = open(fileUrl)
+                seq = re.compile("\s+")
+                for line in file:
+                    lst = seq.split(line.strip())
+                    shapeMatch = devShapeMatch()
+                    shapeMatch.devShapeEvi_id = lst[0]
+                    shapeMatch.devShapeSample_id = lst[1]
+                    shapeMatch.matchDegree = lst[2]
+                    shapeMatch.matchSampleCoordi = json.dumps(lst[3:6])
+                    shapeMatch.matchEviCoordi = json.dumps(lst[6:])
+                    shapeMatch.isCircuit = evi.isCircuit
+                    shapeMatch.save()
+                file.close()
+                os.remove(fileUrl)
+
+    return HttpResponse("devShapeMatching has updated~")
+
+
+
+
+
+
 class exploSampleViewset(mixins.CreateModelMixin,mixins.ListModelMixin, mixins.RetrieveModelMixin,
                      mixins.DestroyModelMixin, viewsets.GenericViewSet):
     """
@@ -247,29 +290,30 @@ class exploSampleFileViewset(viewsets.ModelViewSet):
 
     def handleFile(self,file):
 
-        # def pearson(txt_1, txt_2):
-        #     signal_1 = np.loadtxt(txt_1)[1]
-        #     print(signal_1)
-        #     signal_2 = np.loadtxt(txt_2)[1]
-        #     print(signal_2)
-        #     n = len(signal_1)
-        #     mean1 = signal_1.mean()
-        #     mean2 = signal_2.mean()
-        #     standvalue1 = math.sqrt(sum((signal_1 - mean1) * (signal_1 - mean1)))
-        #     standvalue2 = math.sqrt(sum((signal_2 - mean2) * (signal_2 - mean2)))
-        #     cov = sum((signal_1 - mean1) * (signal_2 - mean2))
-        #     pearson = cov / (standvalue1 * standvalue2)
-        #     return pearson
+        def pearson(txt_1, txt_2):
+            signal_1 = np.loadtxt(txt_1)[1]
+            print(signal_1)
+            signal_2 = np.loadtxt(txt_2)[1]
+            print(signal_2)
+            n = len(signal_1)
+            mean1 = signal_1.mean()
+            mean2 = signal_2.mean()
+            standvalue1 = math.sqrt(sum((signal_1 - mean1) * (signal_1 - mean1)))
+            standvalue2 = math.sqrt(sum((signal_2 - mean2) * (signal_2 - mean2)))
+            cov = sum((signal_1 - mean1) * (signal_2 - mean2))
+            pearson = cov / (standvalue1 * standvalue2)
+            return pearson
 
         if file.detectType == 3:
             file.handledUrl = preprocess(file.exploSample.id, os.path.join(MEDIA_ROOT, str(file.docUrl)),
                                          os.path.join(MEDIA_ROOT, "file\exploSampleFile\handled"),
                                          "file\exploSampleFile")
             file.save()
+            renew2.delay()
 
-            # fileId = file.id
+            fileId = file.id
 
-            # renew2.delay()
+
 
             # evi_files = os.path.join(MEDIA_ROOT,"file\exploEviFile\handled")
             # all_file = os.listdir(evi_files)
@@ -285,14 +329,26 @@ class exploSampleFileViewset(viewsets.ModelViewSet):
             #         evis = eviMatchs.order_by("matchDegree")
             #
             #         if len(sampleMatch) == 0:
-            #             if cur_score > evis[0].matchDegree:
-            #                 evis[0].delete()
-            #                 explo_match = exploMatch()
-            #                 explo_match.exploSample = file.exploSample
-            #                 explo_match.exploEvi_id = txt_id#exploEviMatch
-            #                 explo_match.matchType = 3
-            #                 explo_match.matchDegree = cur_score
-            #                 explo_match.save()
+            #             if len(evis) != 0:
+            #                 if cur_score > evis[0].matchDegree:
+            #                     if len(evis) == 10:
+            #                         evis[0].delete()
+            #
+            #                     explo_match = exploMatch()
+            #                     explo_match.exploSample = file.exploSample
+            #                     explo_match.exploEvi_id = txt_id  # exploEviMatch
+            #                     explo_match.matchType = 3
+            #                     explo_match.matchDegree = cur_score
+            #                     explo_match.save()
+            #             else:
+            #                 for i in similarity_rank(cur_path,
+            #                                          os.path.join(MEDIA_ROOT, "file\exploSampleFile\handled")):
+            #                     explo_match = exploMatch()
+            #                     explo_match.exploSample_id = i[0]
+            #                     explo_match.exploEvi_id = txt_id  # exploEviMatch
+            #                     explo_match.matchType = 3
+            #                     explo_match.matchDegree = i[1]
+            #                     explo_match.save()
             #         else:
             #             if cur_score >= evis[0].matchDegree:
             #                 sampleMatch[0].matchDegree = cur_score
@@ -303,11 +359,38 @@ class exploSampleFileViewset(viewsets.ModelViewSet):
             #                 for i in similarity_rank(cur_path,
             #                                          os.path.join(MEDIA_ROOT, "file\exploSampleFile\handled")):
             #                     explo_match = exploMatch()
-            #                     explo_match.exploSample = exploSample.objects.get(id=i[0])
-            #                     explo_match.exploEvi_id =txt_id #exploEviMatch
+            #                     explo_match.exploSample_id = i[0]
+            #                     explo_match.exploEvi_id = txt_id  # exploEviMatch
             #                     explo_match.matchType = 3
             #                     explo_match.matchDegree = i[1]
             #                     explo_match.save()
+            #     # end = time.time()
+            #     # print(end - start)
+            #     # print("end")
+
+            # exploMatch.objects.filter(matchType=3).delete()
+            # evi_files = os.path.join(MEDIA_ROOT, "file\exploEviFile\handled")
+            # all_file = os.listdir(evi_files)
+            # for i in range(0, len(all_file)):
+            #     if os.path.splitext(all_file[i])[1] == '.txt':
+            #         cur_path = os.path.join(evi_files, all_file[i])
+            #         cur_txt = all_file[i]
+            #         txt_id = os.path.splitext(cur_txt)[0]
+            #         # eviMatchs = exploMatch.objects.filter(exploEvi_id=txt_id).filter(
+            #         #     matchType=3)  # exploEvi.objects.get(id = txt_id))
+            #         # evis = eviMatchs.order_by("matchDegree")
+            #         #
+            #         # for evi in evis:
+            #         #     evi.delete()
+            #         for i in similarity_rank(cur_path,
+            #                                  os.path.join(MEDIA_ROOT, "file\exploSampleFile\handled")):
+            #             explo_match = exploMatch()
+            #             explo_match.exploSample_id = i[0]
+            #             explo_match.exploEvi_id = txt_id  # exploEviMatch
+            #             explo_match.matchType = 3
+            #             explo_match.matchDegree = i[1]
+            #             explo_match.save()
+
 
         elif file.detectType == 4:
             chSample_list = xls_process(os.path.join(MEDIA_ROOT, str(file.docUrl)))
@@ -368,6 +451,18 @@ class devCompSampleFileViewset(viewsets.ModelViewSet):
                 dev_ChSample.detectType = chSample[0]
                 dev_ChSample.elementsList = json.dumps(chSample[1:])
                 dev_ChSample.save()
+        elif file.detectType == 5 :
+            oriFile = os.path.join(MEDIA_ROOT,str(file.docUrl))
+
+            exfolder = os.path.join(MEDIA_ROOT,"file\devCompSampleFile")
+            folder = exfolder + "/"+str(file.devCompSample_id)+"/"+file.strength+"/"
+
+            if not os.path.exists(folder):  # 判断是否存在文件夹如果不存在则创建为文件夹
+                os.makedirs(folder)  # makedirs 创建文件时如果路径不存在会创建这个路径
+            file.docUrl = "file/devCompSampleFile/"+str(file.devCompSample_id)+"/"+file.strength+"/"+GCMS_handle(file.devCompSample.sname,oriFile,folder)
+            file.save()
+
+
         if file.detectType not in devCompMatchType:
             devCompMatchType.append(file.detectType)
         return file
@@ -473,65 +568,71 @@ class devShapeSampleViewset(viewsets.ModelViewSet):
         picType = os.path.splitext(name)[1]
         path = os.path.join(MEDIA_ROOT,"image/devShapeSample/original/")
         os.rename(os.path.join(MEDIA_ROOT,str(sample.originalUrl)), os.path.join(path, str(id) + picType))
-        middle = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "utils/middle/")
-
-        #写文件
-        rectUrl = os.path.join(middle,str(id) + "-1.txt")
-        proUrl = os.path.join(middle,str(id) + "-2.txt")
-        backUrl = os.path.join(middle,str(id) + "-3.txt")
-        boardUrl = os.path.join(middle,str(id) + "-4.txt")
-
-        rect = open(rectUrl,"w")
-        rect.write(sample.rectCoordi)
-        rect.close()
-        pro = open(proUrl,"w")
-        pro.write(sample.proCoordi)
-        pro.close()
-        back = open(backUrl,"w")
-        back.write(sample.backCoordi)
-        back.close()
-        board = open(boardUrl,"w")
-        board.write(sample.boardCoordi)
-        board.close()
-
-        getPCB(id, "Sample")
-
-        sample.originalUrl = "image/devShapeSample/original/"+str(id) + picType
-        sample.blackWhiteUrl = "image/devShapeSample/blackWhite/"+str(id)+".jpg"
-        sample.interColorUrl = "image/devShapeSample/interColor/"+str(id)+".jpg"
-        sample.middleResultUrl = "file/devShapeSample/middleResult/"+str(id)+".txt"
-
-        os.remove(rectUrl)
-        os.remove(proUrl)
-        os.remove(backUrl)
-        os.remove(boardUrl)
-
+        sample.originalUrl = "image/devShapeSample/original/" + str(id) + picType
         sample.save()
+        return sample
+
 
     def perform_update(self, serializer):
         sample = serializer.save()
         id =sample.id
         middle = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "utils/middle/")
-        compCheckUrl = os.path.join(middle,str(id) + "-5.txt")
-        boardCheckUrl = os.path.join(middle,str(id) + "-6.txt")
+        if sample.isFirst == True:
+            middle = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "utils/middle/")
 
-        compCheck = open(compCheckUrl,"w")
-        compCheck.write(sample.compCheckCoordi)
-        compCheck.close()
-        boardCheck = open(boardCheckUrl,"w")
-        boardCheck.write(sample.boardCheckCoordi)
-        boardCheck.close()
+            # 写文件
+            rectUrl = os.path.join(middle, str(id) + "-1.txt")
+            proUrl = os.path.join(middle, str(id) + "-2.txt")
+            backUrl = os.path.join(middle, str(id) + "-3.txt")
+            boardUrl = os.path.join(middle, str(id) + "-4.txt")
 
-        segComp(id, "Sample")
+            rect = open(rectUrl, "w")
+            rect.write(sample.rectCoordi)
+            rect.close()
+            pro = open(proUrl, "w")
+            pro.write(sample.proCoordi)
+            pro.close()
+            back = open(backUrl, "w")
+            back.write(sample.backCoordi)
+            back.close()
+            board = open(boardUrl, "w")
+            board.write(sample.boardCoordi)
+            board.close()
 
-        sample.featureUrl = "file/devShapeSample/feature/"+str(id)+".harris"
-        sample.resultPicUrl = "image/devShapeSample/result/"+str(id)+".jpg"
-        sample.resultFileUrl = "file/devShapeSample/result/"+str(id)+".seg"
+            getPCB(id, "Sample")
 
-        os.remove(compCheckUrl)
-        os.remove(boardCheckUrl)
+            sample.blackWhiteUrl = "image/devShapeSample/blackWhite/" + str(id) + ".jpg"
+            sample.interColorUrl = "image/devShapeSample/interColor/" + str(id) + ".jpg"
+            sample.middleResultUrl = "file/devShapeSample/middleResult/" + str(id) + ".txt"
 
-        sample.save()
+            os.remove(rectUrl)
+            os.remove(proUrl)
+            os.remove(backUrl)
+            os.remove(boardUrl)
+
+            sample.save()
+        else:
+            compCheckUrl = os.path.join(middle,str(id) + "-5.txt")
+            boardCheckUrl = os.path.join(middle,str(id) + "-6.txt")
+
+            compCheck = open(compCheckUrl,"w")
+            compCheck.write(sample.compCheckCoordi)
+            compCheck.close()
+            boardCheck = open(boardCheckUrl,"w")
+            boardCheck.write(sample.boardCheckCoordi)
+            boardCheck.close()
+
+            segComp(id, "Sample")
+
+            sample.featureUrl = "file/devShapeSample/feature/"+str(id)+".harris"
+            sample.resultPicUrl = "image/devShapeSample/result/"+str(id)+".jpg"
+            sample.resultFileUrl = "file/devShapeSample/result/"+str(id)+".seg"
+
+            os.remove(compCheckUrl)
+            os.remove(boardCheckUrl)
+
+            sample.save()
+        return sample
 
     def perform_destroy(self, instance):
         # originalUrl= os.path.join(MEDIA_ROOT,str( instance.originalUrl))

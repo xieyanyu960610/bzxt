@@ -188,7 +188,8 @@ class devShapeEvi(models.Model):
     """
     爆炸装置案件物证形态表
     """
-    isCircuit = models.BooleanField(default=False, verbose_name="是否是电路板")
+    isCircuit = models.BooleanField(default=False, verbose_name="是否是元器件匹配")
+    isFirst = models.BooleanField(default=True,verbose_name="是否是第一次分割")
     eviID = models.CharField(max_length=10, verbose_name="物证编号")
     user = models.ForeignKey(User, verbose_name=u"处理人员")#,on_delete=models.CASCADE)
     inputDate = models.DateTimeField(default=datetime.now, verbose_name=u"录入日期")
@@ -210,8 +211,8 @@ class devShapeEvi(models.Model):
                                      verbose_name="结果图像形式路径")#upload_to="image/devShapeEvi/result/",
     resultFileUrl = models.FileField(max_length=100,  null=True, blank=True,
                                      verbose_name="结果文件形式路径")#upload_to="file/devShapeEvi/result/",
-    originalUrl = models.ImageField(max_length=100, null=True, blank=True,
-                                    verbose_name="原始图像文件路径")# upload_to="image/devShapeEvi/original/",
+    originalUrl = models.ImageField(max_length=100,upload_to="image/devShapeEvi/original/", null=True, blank=True,
+                                    verbose_name="原始图像文件路径")#
     originalResolution = models.CharField(max_length=30, null=True, blank=True, verbose_name="原始图像采集分辨率")
     nomUrl = models.ImageField(max_length=100,  null=True, blank=True,
                                verbose_name="归一化图像文件路径")#upload_to="image/devShapeEvi/nom/",

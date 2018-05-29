@@ -20,6 +20,7 @@ class exploMatch(models.Model):
     matchType =models.IntegerField(choices=DETECT_TYPE, verbose_name="匹配数据类型")
     matchModel =models.CharField(max_length=20,null=True,blank=True,verbose_name='检测类型')
     matchDegree =models.FloatField(default=0.0,verbose_name="匹配程度")
+    isSure = models.BooleanField(default=False, verbose_name="是否确认")
   #  isDelete = models.BooleanField(default=False, verbose_name="是否逻辑删除")
     class Meta:
         verbose_name = "炸药及原材料物证匹配结果表"
@@ -45,6 +46,8 @@ class devCompMatch(models.Model):
     matchType =models.IntegerField(choices=DETECT_TYPE, verbose_name="匹配数据类型")
     matchModel =models.CharField(max_length=20,null=True,blank=True,verbose_name='检测类型')
     matchDegree =models.FloatField(default=0.0,verbose_name="匹配程度")
+    strength = models.CharField(max_length=20, default="千分之一", verbose_name="浓度")
+    isSure = models.BooleanField(default=False, verbose_name="是否确认")
  #   isDelete = models.BooleanField(default=False, verbose_name="是否逻辑删除")
     class Meta:
         verbose_name = "爆炸装置案件物证成分匹配结果表"
@@ -60,9 +63,11 @@ class devShapeMatch(models.Model):
     """
     devShapeSample = models.ForeignKey(devShapeSample, null=True,blank=True,verbose_name=u"对应的成分样本",related_name="devShapeMatchSample",on_delete=models.CASCADE)
     devShapeEvi = models.ForeignKey(devShapeEvi, verbose_name=u"对应的物证",related_name="devShapeMatchEvi",on_delete=models.CASCADE)
+    isCircuit = models.BooleanField(default=False, verbose_name="是否是元器件匹配")
     matchDegree =models.FloatField(default=0.0,verbose_name="得分")
-    matchCoordi = models.CharField(max_length=400, null=True, blank=True, verbose_name="匹配的位置坐标")
- #   isDelete = models.BooleanField(default=False, verbose_name="是否逻辑删除")
+    matchSampleCoordi = models.CharField(max_length=400, null=True, blank=True, verbose_name="匹配的样本位置坐标")
+    matchEviCoordi = models.CharField(max_length=400, null=True, blank=True, verbose_name="匹配的物证位置坐标")
+    isSure = models.BooleanField(default=False, verbose_name="是否确认")
     class Meta:
         verbose_name = "爆炸装置案件物证形态匹配结果表"
         verbose_name_plural = verbose_name
