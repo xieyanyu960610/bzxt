@@ -5,11 +5,48 @@ from rest_framework.validators import UniqueTogetherValidator
 from .models import *
 from utils.XRDhandle import preprocess
 
+class ImgSerializer(serializers.ModelSerializer):
+    user = serializers.HiddenField(default=serializers.CurrentUserDefault())
+
+    def __str__(self):
+        return self.url
+
+    class Meta:
+        model = Image
+        fields = ('user', 'url')
+
+class ListImgSerializer(serializers.Serializer):
+    imgs = serializers.ListField(
+        child=serializers.FileField(max_length=100000, allow_empty_file=False, use_url=True),
+        write_only=True )
+    return_imgs = serializers.ListField(
+        child=serializers.CharField(max_length=1000,),
+        read_only=True )
+
+    def create(self, validated_data):
+        imgs = validated_data.get('imgs')
+        images = []
+        for index, url in enumerate(imgs):
+            image = Image.objects.create(url=url, user=UserProfile.objects.get(id=self.context['request'].user.id))
+            blog = ImgSerializer(image, context=self.context)
+            images.append(blog.data['url'])
+            return {'return_imgs':images}
+
 
 class exploChSampleSerializer(serializers.ModelSerializer):
     class Meta:
         model = exploChSample
         fields = "__all__"
+
+class exploSampleFileDetailSerializer(serializers.ModelSerializer):
+
+    exploChSample=exploChSampleSerializer(many=True)
+
+    class Meta:
+        model = exploSampleFile
+        fields =("exploSample", "user", "inputDate", "detectDevice", "detectMrfs", "detectType", "docType", "docUrl",
+         "handledUrl", "exploChSample")
+
 
 class exploSampleFileSerializer(serializers.ModelSerializer):
     user = serializers.HiddenField(
@@ -22,14 +59,7 @@ class exploSampleFileSerializer(serializers.ModelSerializer):
         model = exploSampleFile
         fields = "__all__"
 
-class exploSampleFileDetailSerializer(serializers.ModelSerializer):
 
-    exploChSample=exploChSampleSerializer(many=True)
-
-    class Meta:
-        model = exploSampleFile
-        fields =("exploSample", "user", "inputDate", "detectDevice", "detectMrfs", "detectType", "docType", "docUrl",
-         "handledUrl", "exploChSample")
 
 
 class exploSamplePeakSerializer(serializers.ModelSerializer):
@@ -99,7 +129,7 @@ class devCompSampleDetailSerializer(serializers.ModelSerializer):
         model =devCompSample
         fields = ("id", "sname", "sampleID", "user", "inputDate", "sampleState", "sampleOrigin",
                   "sampleType", "sampleMake", "sampleDraw", "sampleAnalyse", "analyseCondition", "picUrl",
-                  "picDescrip", "note", "devCompSampleFile", "devCompChSample")
+                  "picDescrip", "note", "devCompSampleFile",)
 
 
 class devCompSampleSerializer(serializers.ModelSerializer):

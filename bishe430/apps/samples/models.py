@@ -7,6 +7,15 @@ from apps.users.models import UserProfile
 from bishe430.settings import MEDIA_ROOT
 
 
+class Image(models.Model):
+    user = models.ForeignKey(UserProfile, verbose_name='用户')
+    url = models.ImageField(upload_to="image/test/", null=True, blank=True, verbose_name='图片测试url')
+
+    class Meta:
+        verbose_name = '图片测试'
+        verbose_name_plural = verbose_name
+
+
 
 # Create your models here.
 class exploSample(models.Model):
@@ -41,6 +50,9 @@ class exploSampleFile(models.Model):
     """
     炸药及原材料常见样本文件存储表
     """
+    def get_file_path(instance, filename):
+        return 'file/exploSampleFile/%s/%s/%s' % (instance.exploSample.sname, instance.strength, filename)
+
     DETECT_TYPE = (
         (1, "FTIF"),
         (2, "Raman"),
@@ -60,10 +72,15 @@ class exploSampleFile(models.Model):
     inputDate=models.DateTimeField(default=datetime.now, verbose_name=u"录入日期")
     detectType =models.IntegerField(choices=DETECT_TYPE, verbose_name="检测数据类型")
     docType =models.IntegerField(choices=DOC_TYPE,null=True,blank=True, verbose_name="录入文档格式")
-    docUrl =models.FileField(max_length=100,upload_to="file/exploSampleFile/",null=True,blank=True,verbose_name="录入文档路径")
+    docUrl =models.FileField(max_length=100,upload_to=get_file_path,null=True,blank=True,verbose_name="录入文档路径")
+    strength = models.CharField(max_length=20, default="", verbose_name="浓度")
     #handledUrl2 = models.CharField(max_length=200,null=True,blank=True,verbose_name="处理完的文件",)
     handledUrl = models.FileField(max_length=100,null=True,blank=True,verbose_name="处理完的文件")
  #   isDelete = models.BooleanField(default=False, verbose_name="是否逻辑删除")
+
+
+
+
     class Meta:
         verbose_name = "炸药及原材料常见样本文件存储表"
         verbose_name_plural = verbose_name
@@ -154,7 +171,7 @@ class devCompSampleFile(models.Model):
     docType = models.IntegerField(choices=DOC_TYPE, null=True,blank=True,verbose_name="录入文档格式")
     docUrl = models.FileField(max_length=100, upload_to="file/devCompSampleFile/", null=True, blank=True,
                               verbose_name="录入文档路径")
-    strength = models.CharField(max_length=20, default="千分之一", verbose_name="浓度")
+    strength = models.CharField(max_length=20, default="", verbose_name="浓度")
     handledUrl = models.FileField(max_length=100, null=True, blank=True,
                                   verbose_name="处理完的文件")
     #isDelete = models.BooleanField(default=False, verbose_name="是否逻辑删除")

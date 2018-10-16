@@ -19,6 +19,8 @@ import math
 from django.http import HttpResponse
 from .tasks import *
 import re
+import datetime
+import time
 
 
 from .models import *
@@ -42,6 +44,8 @@ from utils.GCMS_handle import *
 exploMatchType = []
 devCompMatchType = []
 
+
+
 def tasks(request,x,y):
     print('before run_test_suit')
     result = add.delay(x,y)
@@ -50,6 +54,7 @@ def tasks(request,x,y):
 
 
 def updateExploMatch(self):
+    starttime = datetime.datetime.now()
     counting = len(exploMatchType)
     for i in range(0,counting):
         if exploMatchType[0] == 3 :
@@ -101,7 +106,8 @@ def updateExploMatch(self):
                     explo_match.matchDegree = scoreList[1]
                     explo_match.save()
             # return HttpResponse("exploMatchingXRF is runing background~")
-
+    endtime = datetime.datetime.now()
+    print(endtime - starttime).seconds
     return HttpResponse("exploMatching has updated~")
 
 
@@ -198,6 +204,22 @@ def updateDevCompMatch(self):
                     dev_match.matchDegree = scoreList[1]
                     dev_match.save()
             # return HttpResponse("exploMatchingXRF is runing background~")
+        elif devCompMatchType[0] == 5:
+            devCompMatchType.remove(4)
+            devCompMatch.objects.filter(matchType=5).delete()
+            evis = devShapeEvi.objects.all()
+            for evi in evis:
+                id = evi.id
+                exfolder = os.path.join(MEDIA_ROOT, "file\devCompEviFile")
+                folder = exfolder + "/" + str(id)
+                for sim in similarity_rank(folder, os.path.join(MEDIA_ROOT, "file\devCompSampleFile")):
+                    dev_match = devCompMatch()
+                    dev_match.devCompSample_id = sim[0]  # devCompSample.objects.get(id=scoreList[0])
+                    dev_match.devCompEvi = evi
+                    dev_match.matchType = 5
+                    dev_match.matchDegree = sim[1]
+                    dev_match.strength = sim[2]
+                    dev_match.save()
 
     return HttpResponse("devCompMatching has updated~")
 
@@ -239,6 +261,14 @@ def updateDevShapeMatch(self):
 
 
 
+
+
+class ImgViewSet(mixins.CreateModelMixin,viewsets.GenericViewSet):
+    '''
+    create: 创建图片
+    '''
+    queryset = Image.objects.all()
+    serializer_class = ListImgSerializer
 
 
 
@@ -305,11 +335,14 @@ class exploSampleFileViewset(viewsets.ModelViewSet):
             return pearson
 
         if file.detectType == 3:
+            starttime =time.clock()
             file.handledUrl = preprocess(file.exploSample.id, os.path.join(MEDIA_ROOT, str(file.docUrl)),
                                          os.path.join(MEDIA_ROOT, "file\exploSampleFile\handled"),
                                          "file\exploSampleFile")
+            endtime = time.clock()
+            print('Running time: %s Seconds' % (endtime - starttime))
             file.save()
-            renew2.delay()
+            # renew2.delay()
 
             fileId = file.id
 

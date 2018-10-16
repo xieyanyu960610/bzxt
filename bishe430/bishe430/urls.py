@@ -86,7 +86,11 @@ router.register(r'devCompMatchs', devCompMatchViewset, base_name="devCompMatchs"
 
 router.register(r'devShapeMatchs', devShapeMatchViewset, base_name="devShapeMatchs")
 
+router.register(r'Imgs', ImgViewSet, base_name="Img")
+
 router.register(r'users', UserViewset, base_name="users")
+
+
 urlpatterns = [
      url(r'^xadmin/', xadmin.site.urls),
      url(r'^media/(?P<path>.*)$',  serve, {"document_root":MEDIA_ROOT}),

@@ -19,6 +19,7 @@ class exploMatch(models.Model):
     exploEvi = models.ForeignKey(exploEvi, verbose_name=u"对应的物证",related_name="exploMatchEvi",on_delete=models.CASCADE)
     matchType =models.IntegerField(choices=DETECT_TYPE, verbose_name="匹配数据类型")
     matchModel =models.CharField(max_length=20,null=True,blank=True,verbose_name='检测类型')
+    strength = models.CharField(max_length=20, default="", verbose_name="浓度")
     matchDegree =models.FloatField(default=0.0,verbose_name="匹配程度")
     isSure = models.BooleanField(default=False, verbose_name="是否确认")
   #  isDelete = models.BooleanField(default=False, verbose_name="是否逻辑删除")
@@ -46,7 +47,7 @@ class devCompMatch(models.Model):
     matchType =models.IntegerField(choices=DETECT_TYPE, verbose_name="匹配数据类型")
     matchModel =models.CharField(max_length=20,null=True,blank=True,verbose_name='检测类型')
     matchDegree =models.FloatField(default=0.0,verbose_name="匹配程度")
-    strength = models.CharField(max_length=20, default="千分之一", verbose_name="浓度")
+    strength = models.CharField(max_length=20, default="", verbose_name="浓度")
     isSure = models.BooleanField(default=False, verbose_name="是否确认")
  #   isDelete = models.BooleanField(default=False, verbose_name="是否逻辑删除")
     class Meta:

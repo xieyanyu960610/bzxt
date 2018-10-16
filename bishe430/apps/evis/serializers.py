@@ -47,7 +47,8 @@ class exploEviSerializer(serializers.ModelSerializer):
     user = serializers.HiddenField(
         default=serializers.CurrentUserDefault()
     )
-    inputDate = serializers.DateTimeField(read_only=True, format='%Y-%m-%d %H:%M')
+    inputDate = serializers.DateTimeField(
+        read_only=True, format='%Y-%m-%d %H:%M')
 
     class Meta:
         model = exploEvi

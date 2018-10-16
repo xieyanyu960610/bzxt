@@ -23,6 +23,7 @@ from bishe430.settings import MEDIA_ROOT
 from samples.models import *
 from user_operation.models import *
 from utils.PCB import *
+from utils.GCMS_handle import *
 # Create your views here.
 
 
@@ -182,6 +183,26 @@ class devCompEviFileViewset(viewsets.ModelViewSet):
                     dev_match.matchModel = chEvi[0]
                     dev_match.matchDegree = scoreList[1]
                     dev_match.save()
+        elif file.detectType == 5 :
+            oriFile = os.path.join(MEDIA_ROOT,str(file.docUrl))
+
+            exfolder = os.path.join(MEDIA_ROOT,"file\devCompEviFile")
+            folder = exfolder + "/"+str(file.devCompEvi_id)+"/"
+
+            if not os.path.exists(folder):  # 判断是否存在文件夹如果不存在则创建为文件夹
+                os.makedirs(folder)  # makedirs 创建文件时如果路径不存在会创建这个路径
+            file.docUrl = "file/devCompEviFile/"+str(file.devCompEvi_id)+"/"+GCMS_handle(file.devCompEvi.sname,oriFile,folder)
+            file.save()
+
+            for sim in similarity_count(folder,os.path.join(MEDIA_ROOT,"file\devCompSampleFile")):
+                dev_match = devCompMatch()
+                dev_match.devCompSample_id = sim[0]  # devCompSample.objects.get(id=scoreList[0])
+                dev_match.devCompEvi = file.devCompEvi
+                dev_match.matchType = 5
+                dev_match.matchDegree =sim[1]
+                dev_match.strength = sim[2]
+                dev_match.save()
+
         return file
 
     def perform_update(self, serializer):
@@ -247,6 +268,7 @@ class devShapeEviViewset(viewsets.ModelViewSet):
         os.rename(os.path.join(MEDIA_ROOT,str(evi.originalUrl)), os.path.join(path, str(id) + picType))
         evi.originalUrl = "image/devShapeEvi/original/" + str(id) + picType
         evi.save()
+        #特征匹配
         if evi.isCircuit == False:
             FeatureMatching(id)
             evi.featureUrl = "file/devShapeEvi/feature/" + str(id) + ".harris"
